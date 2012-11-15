@@ -6,8 +6,7 @@
     "jade": "0.9.x",
     "sylus": "0.30.x",
     "socket.io": "0.9.x",
-    "xml2js": "0.2.x",
-    
+    "xml2js": "0.2.x"
   },
   "engines": {
     "node": "0.8.x",
