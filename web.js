@@ -102,7 +102,7 @@ io.sockets.on( 'connection', function ( socket ) {
 //SERVE THE SHIT!
 if (!module.parent) {
 	var port = process.env.PORT || 3000;
-	app.listen(port, function() {
+	server.listen(port, function() {
 		console.log("Listening on " + port);
 	});
 }
