@@ -101,8 +101,10 @@ io.sockets.on( 'connection', function ( socket ) {
 
 //SERVE THE SHIT!
 if (!module.parent) {
-  server.listen(3000);
-  console.log('Express app started on port 3000');
+	var port = process.env.PORT || 3000;
+	app.listen(port, function() {
+		console.log("Listening on " + port);
+	});
 }
 
 
