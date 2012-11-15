@@ -22,6 +22,24 @@ app.configure(function(){
   app.use(express.static(__dirname + '/public'));
 });
 
+app.configure('development', function() {
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.configure('production', function() {
+  app.use(express.errorHandler());
+});
+
+
+// Heroku won't actually allow us to use WebSockets
+// so we have to setup polling instead.
+// https://devcenter.heroku.com/articles/using-socket-io-with-node-js-on-heroku
+io.configure(function () {
+  io.set("transports", ["xhr-polling"]);
+  io.set("polling duration", 10);
+});
+
+
 //Socket.io connections
 var connections = {};
 
