@@ -36,7 +36,9 @@ app.get('/', function(req, res) {
 		header = 'Welcome to Chirpie';
 
 	res.render('index.jade', {
-			'title': 'FUCK',
+			'title': 'Haardvark',
+			'last_editor' : 'Jonathan',
+			'last_editor_time' : 'Seconds ago',
 			'header': header,
 			'tweets': tweets,
 			stylesheets: ['/stylesheets/style.styl']

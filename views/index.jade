@@ -1,8 +1,6 @@
 extends layout
 
-block scripts
-	script(src='/socket.io/socket.io.js')
-	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js')
+block page-scripts
 	script 
 		$(document).ready(function(){
 			var socket = io.connect('http://127.0.0.1:3000/');
@@ -23,22 +21,25 @@ block scripts
 				socket.emit('sendchat', message);
 			});
 		});
-block stylesheets
-	link(rel='stylesheet', href='/stylesheets/style.css')
+
 
 block content
-	form(action="/send", method="post")
-		input(type="text",length="140",name="tweet")
-		input(type="submit",value="Tweet")
+	.container
+		.row-fluid
+			.span4
+				#last-edit Last edited by #{last_editor} at #{last_editor_time} 
+				form(action="/send", method="post")
+					input(type="text",length="140",name="tweet")
+					input(type="submit",value="Tweet")
 
-	div
-		#conversation
-			input(type="text")#data
-			input(type="button",value="send")#datasend
+				div
+					#conversation
+						input(type="text")#data
+						input(type="button",value="send")#datasend
 
-
-	div= title 
-		| beaches #{title}
-		div#world hello world how are you? #{header}
-		include partials/tweet.jade
-	div#container content, bitches
+			.span8
+				div= title 
+					| beaches #{title}
+					div#world hello world how are you? #{header}
+					include partials/tweet.jade
+				div#container content, bitches

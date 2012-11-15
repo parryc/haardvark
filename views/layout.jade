@@ -1,10 +1,35 @@
 html(lang='en')
 	head
 		title= title 
+		meta(name="viewport",content="width=device-width, initial-scale=1.0")
 		block scripts 
+			script(src='/socket.io/socket.io.js')
+			script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js')
+			script(src="/javascripts/bootstrap.js")
+		block page-scripts
 		block stylesheets
+			link(rel='stylesheet', href='/stylesheets/style.css')
+			link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+			link(rel='stylesheet', href='/stylesheets/bootstrap-responsive.css')
 	body 
 		block header
+			.navbar
+				.navbar-inner
+					a(href="/",title="Haardvark").pull-left.brand
+						h1 Haardvark
+					ul(style="font-size: 2em;").breadcrumb
+						li
+							a(href="#") Hi
+							span.divider
+								>
+						li 
+							a(href="#") Team
+							span.divider
+								>
+						li 
+							a(href="#").active Go!
+						li.pull-right Username
+
 		block content
 			block tweets
 		block footer
