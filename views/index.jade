@@ -3,7 +3,7 @@ extends layout
 block page-scripts
 	script 
 		$(document).ready(function(){
-			var socket = io.connect('http://127.0.0.1:3000/');
+			var socket = io.connect('http://still-thicket-8675.herokuapp.com');
 			socket.on('updatechat', function(data){
 				$('#container').append(data);
 				console.log(data);
