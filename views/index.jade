@@ -24,22 +24,13 @@ block page-scripts
 
 
 block content
-	.container
-		.row-fluid
-			.span4
-				#last-edit Last edited by #{last_editor} at #{last_editor_time} 
-				form(action="/send", method="post")
-					input(type="text",length="140",name="tweet")
-					input(type="submit",value="Tweet")
+	#last-edit Last edited by #{last_editor} at #{last_editor_time} 
+	form(action="/send", method="post")
+		input(type="text",length="140",name="tweet")
+		input(type="submit",value="Tweet")
 
-				div
-					#conversation
-						input(type="text")#data
-						input(type="button",value="send")#datasend
-
-			.span8
-				div= title 
-					| beaches #{title}
-					div#world hello world how are you? #{header}
-					include partials/tweet.jade
-				div#container content, bitches
+	div= title 
+		| beaches #{title}
+		div#world hello world how are you? #{header}
+		include partials/tweet.jade
+	div#container content, bitches

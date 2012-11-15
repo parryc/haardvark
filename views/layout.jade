@@ -6,6 +6,20 @@ html(lang='en')
 			script(src='/socket.io/socket.io.js')
 			script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js')
 			script(src="/javascripts/bootstrap.js")
+			script
+				$(document).ready(function(){
+					$('.column-content').hide();
+					$('.icon-chevron-down').hide();
+					$('.column-menu').click(function(){
+						toggleHeader(this);
+						});
+					function toggleHeader(el){
+						var id = el.id;
+						$('#'+id).next().next().toggle();
+						$('#'+id+ " .icon-chevron-down").toggle();
+						$('#'+id+ " .icon-chevron-up").toggle();
+					}
+				});
 		block page-scripts
 		block stylesheets
 			link(rel='stylesheet', href='/stylesheets/style.css')
@@ -29,7 +43,38 @@ html(lang='en')
 						li 
 							a(href="#").active Go!
 						li.pull-right Username
-
-		block content
-			block tweets
+		.container-fluid
+			.row-fluid
+				.span2
+					block column
+						div
+							#conversation
+								input(type="text",placeholder="Start chatting!")#data
+								//input(type="button",value="send")#datasend
+							div 
+								.column-menu.no-select#due-dates Due dates
+									span.chevron
+										i.icon-chevron-up
+										i.icon-chevron-down
+								a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+									i.icon-plus
+								
+								.column-content
+									| THIS IS THE CONTENT OF THE DUE DATES!
+							hr
+							div
+								.column-menu.no-select#members Members
+									span.chevron
+										i.icon-chevron-up
+										i.icon-chevron-down
+								a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+									i.icon-plus
+									
+								.column-content
+									ul
+										li member 1
+										li member 2
+										li member 3
+				.span10
+					block content
 		block footer
