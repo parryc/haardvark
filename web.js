@@ -12,6 +12,10 @@ var app = express(),
 	parser = new xml2js.Parser(),
 	mobwrite = require('mobwrite');
 
+var mob = mobwrite({
+  // Show debug logs in the browser, and use an uncompressed copy of Javascript.
+  // This also increases the verbosity of server-side logs.
+  debug: true});
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
