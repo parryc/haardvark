@@ -3,7 +3,10 @@ extends layout
 block page-scripts
 	script 
 		$(document).ready(function(){
+			//uncomment for heroku
 			var socket = io.connect('http://still-thicket-8675.herokuapp.com');
+			//comment this out for heroku
+			//var socket = io.connect('127.0.0.1:3000');
 			socket.on('updatechat', function(data){
 				$('#container').append(data);
 				console.log(data);
@@ -34,3 +37,8 @@ block content
 		div#world hello world how are you? #{header}
 		include partials/tweet.jade
 	div#container content, bitches
+	div#mobwrite
+		form
+			textarea(rows="20",cols="60")#colab
+		script
+			mobwrite.share("colab");

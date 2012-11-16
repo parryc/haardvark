@@ -9,7 +9,8 @@ var app = express(),
 	fs = require('fs'),
 	jade = require('jade'),
 	xml2js = require('xml2js'),
-	parser = new xml2js.Parser();
+	parser = new xml2js.Parser(),
+	mobwrite = require('mobwrite');
 
 
 app.configure(function(){
@@ -20,6 +21,7 @@ app.configure(function(){
   app.use(require('stylus').middleware({ src: __dirname + '/public' }));
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
+  app.use(mobwrite());
 });
 
 app.configure('development', function() {

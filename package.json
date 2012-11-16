@@ -6,7 +6,8 @@
     "jade": "0.27.x",
     "stylus": "0.30.x",
     "socket.io": "0.9.11",
-    "xml2js": "0.2.x"
+    "xml2js": "0.2.x",
+    "mobwrite": "0.0.2"
   },
   "engines": {
     "node": "0.8.x",
