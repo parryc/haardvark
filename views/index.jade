@@ -4,9 +4,9 @@ block page-scripts
 	script 
 		$(document).ready(function(){
 			//uncomment for heroku
-			var socket = io.connect('http://still-thicket-8675.herokuapp.com');
+			//var socket = io.connect('http://still-thicket-8675.herokuapp.com');
 			//comment this out for heroku
-			//var socket = io.connect('127.0.0.1:3000');
+			var socket = io.connect('127.0.0.1:3000');
 			socket.on('updatechat', function(data){
 				$('#container').append(data);
 				console.log(data);
