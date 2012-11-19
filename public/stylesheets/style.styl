@@ -24,3 +24,11 @@ body
 	-moz-user-select none
 	-ms-user-select none
 	user-select none
+
+.canvas {
+    line-height 0 /* prevent weird 5px padding under canvas elements (from Paperjs.org) */
+}
+
+.canvas.border canvas {
+    border 1px solid #999
+}

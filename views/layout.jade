@@ -7,6 +7,7 @@ html(lang='en')
 			script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js')
 			script(src="/javascripts/bootstrap.js")
 			script(src="/mobwrite/mobwrite-client.js")
+			script(src="/javascripts/paper.js")
 			script
 				$(document).ready(function(){
 					$('.column-content').hide();
@@ -42,8 +43,10 @@ html(lang='en')
 							span.divider
 								>
 						li 
-							a(href="#").active Go!
+							a(href="#").dance Go!
 						li.pull-right Username
+
+				
 		.container-fluid
 			.row-fluid
 				.span2
@@ -77,5 +80,14 @@ html(lang='en')
 										li member 2
 										li member 3
 				.span10
+					block canvas
+						input(type="checkbox")#erasemode
+						.canvas.border
+							form
+								textarea(rows="20",cols="60")#colab
+							script
+								mobwrite.share("colab");
+							canvas(resize="true",style="border:1px solid black")#myCanvas.canvas
+
 					block content
 		block footer

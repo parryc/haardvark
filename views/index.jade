@@ -1,16 +1,25 @@
 extends layout
 
 block page-scripts
+	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
 	script 
 		$(document).ready(function(){
-			//uncomment for heroku
-			//var socket = io.connect('http://still-thicket-8675.herokuapp.com');
-			//comment this out for heroku
-			var socket = io.connect('127.0.0.1:3000');
+			window.erase = false;
+			$('#erasemode').change(function(){
+				//var canvasWidth = $('#myCanvas').attr("width");
+				//$('#myCanvas').attr("width",canvasWidth*.9);
+				if(window.erase)
+					window.erase = false;
+				else
+					window.erase = true;
+			});
+
+			var socket = io.connect('/')
 			socket.on('updatechat', function(data){
 				$('#container').append(data);
 				console.log(data);
 			});
+
 			socket.on('notification', function (data) {
 				console.log(data);
 				$('#container').html(data.test.name);

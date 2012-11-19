@@ -40,10 +40,10 @@ app.configure('production', function() {
 // Heroku won't actually allow us to use WebSockets
 // so we have to setup polling instead.
 // https://devcenter.heroku.com/articles/using-socket-io-with-node-js-on-heroku
-io.configure(function () {
+/*io.configure(function () {
   io.set("transports", ["xhr-polling"]);
   io.set("polling duration", 10);
-});
+});*/
 
 
 //Socket.io connections
@@ -100,10 +100,17 @@ I'll put a socket in your io
 io.sockets.on( 'connection', function ( socket ) {
 	// when the client emits 'sendchat', this listens and executes
 	socket.on('sendchat', function (data) {
-		// we tell the client to execute 'updatechat' with 2 parameters
 		io.sockets.emit('updatechat', data);
 	});
 	
+	socket.on('drawing_finished', function(data){
+		socket.broadcast.emit('updatedrawing',data);
+	});
+
+	socket.on('erase', function(data){
+		socket.broadcast.emit('erasepath',data);
+	});
+
 
 
   // watching the xml file
