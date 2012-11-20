@@ -1,0 +1,21 @@
+extends layout-groups
+
+block titlepart
+	| #{title}
+
+block username
+	| Check out your groups, #{username}
+
+block page-scripts
+	script 
+		$(document).ready(function(){
+		
+		});
+
+
+block content
+	h1.no-select#group-title Groups
+		a(href="#",style="margin-left: 10px").btn.btn-small
+			i.icon-plus
+	| Test test test lolz
+	| #{username}

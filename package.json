@@ -7,7 +7,8 @@
     "stylus": "0.30.x",
     "socket.io": "0.9.11",
     "xml2js": "0.2.x",
-    "mobwrite": "0.0.2"
+    "mobwrite": "0.0.2",
+    "connect": "2.7.0"
   },
   "engines": {
     "node": "0.8.x",

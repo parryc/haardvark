@@ -12,16 +12,27 @@ var app = express(),
 	parser = new xml2js.Parser(),
 	mobwrite = require('mobwrite');
 
+
 var mob = mobwrite({
   // Show debug logs in the browser, and use an uncompressed copy of Javascript.
   // This also increases the verbosity of server-side logs.
   debug: true});
+
+//sessions and coooookie crisp
+var sessionStore = new express.session.MemoryStore({reapInterval: 60000 * 10});
+app.use(express.cookieParser());
+app.use(express.session({
+  store: sessionStore,
+  key: 'sid',
+  secret: 'you will never guess my secret!'
+}));
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.bodyParser());
   app.use(express.methodOverride());
+  app.use(express.session({secret: 'mima', key: 'express.sid'}));
   app.use(require('stylus').middleware({ src: __dirname + '/public' }));
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
@@ -56,15 +67,31 @@ Application, bitches!
 var tweets = ['pie','test','pie2'];
 
 app.get('/', function(req, res) {
-	var title = 'Chirpie',
-		header = 'Welcome to Chirpie';
-
 	res.render('index.jade', {
+			'title': 'Welcome to Haardvark!'
+	});
+});
+
+app.post('/login', express.bodyParser(), function(req, res){
+	//la la la do some authorization
+	req.session.uid = req.body.username;
+	res.redirect('/groups');
+
+});
+
+app.get('/groups', express.bodyParser(), function(req, res){
+	res.render('groups.jade', {
+		'title': "Groups",
+		'username': req.session.uid
+	});
+});
+
+
+app.get('/doc', function(req, res) {
+	res.render('doc.jade', {
 			'title': 'Haardvark',
 			'last_editor' : 'Jonathan',
 			'last_editor_time' : 'Seconds ago',
-			'header': header,
-			'tweets': tweets,
 			stylesheets: ['/stylesheets/style.styl']
 	});
 });
@@ -94,10 +121,29 @@ app.get('/tweets/:id', function(req,res){
 /********
 I'll put a socket in your io
 *********/
+//Handle all the sessions!?
+io.configure(function (){
+	io.set('authorization', function (handshakeData, callback) {
 
-//from http://www.gianlucaguarini.com atm.
-// creating a new websocket to keep the content updated without any AJAX request
+		if (!handshakeData.headers.cookie)
+			return callback('No cookies, cannot connect', false);
+		var signedCookies = require('express/node_modules/cookie').parse(handshakeData.headers.cookie);
+		handshakeData.cookies = require('express/node_modules/connect/lib/utils').parseSignedCookies(signedCookies, 'you will never guess my secret!');
+
+  
+		sessionStore.get(handshakeData.cookies['sid'], function(err, session) {
+			if (err || !session)
+				return callback('No session found', false);
+			handshakeData.session = session;
+			//session start!
+			return callback(null, true);
+			
+		});
+	});
+});
 io.sockets.on( 'connection', function ( socket ) {
+	socket.join(socket.handshake.sessionID);//Join a session
+	//console.log("Session with ID " + socket.handshake.sessionID + " started.");
 	// when the client emits 'sendchat', this listens and executes
 	socket.on('sendchat', function (data) {
 		io.sockets.emit('updatechat', data);

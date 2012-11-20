@@ -1,0 +1,60 @@
+extends layout
+
+block titlepart
+	| #{title}
+
+block username
+	| #{username}
+
+block page-scripts
+	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
+	script 
+		$(document).ready(function(){
+			window.erase = false;
+			$('#erasemode').change(function(){
+				//var canvasWidth = $('#myCanvas').attr("width");
+				//$('#myCanvas').attr("width",canvasWidth*.9);
+				if(window.erase)
+					window.erase = false;
+				else
+					window.erase = true;
+			});
+
+			var socket = io.connect('/')
+			socket.on('updatechat', function(data){
+				$('#container').append(data);
+				console.log(data);
+			});
+
+			socket.on('notification', function (data) {
+				console.log(data);
+				$('#container').html(data.test.name);
+				$('time').html('Last Update:' + data.time);
+			});
+
+			$('#data').change( function() {
+				var message = $('#data').val();
+				$('#data').val('');
+				// tell server to execute 'sendchat' and send along one parameter
+				socket.emit('sendchat', message);
+			});
+		});
+
+block canvas
+	input(type="checkbox")#erasemode
+	.canvas.border
+		canvas(height="600px",width="500px")#myCanvas.canvas
+		form#colab-container
+			textarea(rows="20")#colab.field.span6
+		script
+			mobwrite.share("colab");
+
+block content
+	#last-edit Last edited by #{last_editor} at #{last_editor_time} 
+	form(action="/send", method="post")
+		input(type="text",length="140",name="tweet")
+		input(type="submit",value="Tweet")
+
+	div= title 
+		| beaches #{title}
+	div#container content, bitches
