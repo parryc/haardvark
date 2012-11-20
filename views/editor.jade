@@ -30,6 +30,9 @@ block page-scripts
 
 			window.erase = false;
 
+			var peakon = false;
+			var peak_state = false;
+
 			$('.btn-group a').click(function(){
 				window.erase = false;
 				$('.btn-group a').removeClass('btn-success');
@@ -41,6 +44,7 @@ block page-scripts
 			$('.sidebar').click(function(){
 				var id = $(this).attr("id");
 				if(id === "edit-mode"){
+
 					//change buttons accordingly
 					$('#edit-mode').addClass("btn-success");
 					$('#draw-mode').removeClass("btn-success");
@@ -51,9 +55,16 @@ block page-scripts
 
 					$('#colab-container').css('margin-top',0);
 					$('#colab-container').css('z-index',0);
+					if(peak_state)
+						$('#peak-mode').click();
+
 
 
 				} else if(id === "draw-mode") {
+					if(peakon){
+						$('#peak-mode').click();
+						peak_state = true;
+					}
 					//Change buttons accordingly
 					$('#draw-button').addClass("btn-success");
 					$('#draw-mode').addClass("btn-success");
@@ -70,7 +81,7 @@ block page-scripts
 				} 
 			});
 
-			var peakon = false;
+
 			$('#peak-mode .icon-eye-open').hide();
 			$('#peak-mode').click(function(){
 				if(!peakon){
@@ -81,13 +92,17 @@ block page-scripts
 					$('#peak-mode .icon-eye-close').hide();
 					$('#colab-container').css("opacity",.7);
 					peakon = true;
+					peak_state = true;
 				} else {
 					$('#myCanvas').hide();
+					$('#myCanvas').css('margin-bottom',0);
+					$('#myCanvas').css('z-index',1);
 					$('#peak-mode .icon-eye-open').hide();
 					$('#peak-mode .icon-eye-close').show();
 					$('#peak-mode').removeClass('btn-success');
 					$('#colab-container').css("opacity",1);
 					peakon = false;
+					peak_state = false;
 				}	
 
 			});
