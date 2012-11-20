@@ -23,16 +23,78 @@ block page-scripts
 	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
 	script 
 		$(document).ready(function(){
+			$('#myCanvas').hide();
+			$('#myCanvas-bar').hide();
+			$('#sidebar').css("left",$('#colab').position().left+$('#colab').width()+20);
+			$('#sidebar').css("top",$('#colab').position().top);
+
 			window.erase = false;
-			$('#erasemode').change(function(){
-				//var canvasWidth = $('#myCanvas').attr("width");
-				//$('#myCanvas').attr("width",canvasWidth*.9);
-				if(window.erase)
-					window.erase = false;
-				else
+
+			$('.btn-group a').click(function(){
+				window.erase = false;
+				$('.btn-group a').removeClass('btn-success');
+				$(this).addClass('btn-success');
+				if($(this).attr("id") === "erase-button")
 					window.erase = true;
 			});
+			
+			$('.sidebar').click(function(){
+				var id = $(this).attr("id");
+				if(id === "edit-mode"){
+					//change buttons accordingly
+					$('#edit-mode').addClass("btn-success");
+					$('#draw-mode').removeClass("btn-success");
+					$('#myCanvas').hide();
+					$('#myCanvas-bar').hide();
+					$('#colab').show();
+					$('#colab-bar').show();
 
+					$('#colab-container').css('margin-top',0);
+					$('#colab-container').css('z-index',0);
+
+
+				} else if(id === "draw-mode") {
+					//Change buttons accordingly
+					$('#draw-button').addClass("btn-success");
+					$('#draw-mode').addClass("btn-success");
+					$('#edit-mode').removeClass("btn-success");
+					$('#myCanvas').show();
+					$('#myCanvas-bar').show();
+					$('#colab-bar').hide();
+
+					$('#colab-container').css('margin-top',-1*$('#myCanvas').height()-6);
+					$('#myCanvas').css("opacity",.7);
+					$('#myCanvas').css("z-index",1);
+					$('#colab-container').css('z-index',-1);
+
+				} 
+			});
+
+			var peakon = false;
+			$('#peak-mode .icon-eye-open').hide();
+			$('#peak-mode').click(function(){
+				if(!peakon){
+					$('#myCanvas').show();
+					$('#myCanvas').css('margin-bottom',-1*$('#colab-container').height());
+					$('#myCanvas').css("z-index",-1);
+					$('#peak-mode .icon-eye-open').show();
+					$('#peak-mode .icon-eye-close').hide();
+					$('#colab-container').css("opacity",.7);
+					peakon = true;
+				} else {
+					$('#myCanvas').hide();
+					$('#peak-mode .icon-eye-open').hide();
+					$('#peak-mode .icon-eye-close').show();
+					$('#peak-mode').removeClass('btn-success');
+					$('#colab-container').css("opacity",1);
+					peakon = false;
+				}	
+
+			});
+
+			//*******
+			//Sockets
+			//*******
 			var socket = io.connect('/')
 			socket.on('updatechat', function(data){
 				$('#container').append(data);
@@ -69,18 +131,77 @@ block members
 				li member 3
 
 block canvas
-	input(type="checkbox")#erasemode
+	| Last edited by #{last_editor} at #{last_editor_time}
+
+	.btn-toolbar#colab-bar
+		.btn-group
+			a(href="").btn
+				i.icon-bold
+			a(href="").btn
+				i.icon-italic
+			a(href="").btn
+				i.icon-list
+
+		.btn-group
+			a(href="").btn
+				i.icon-align-left
+			a(href="").btn
+				i.icon-align-center
+			a(href="").btn
+				i.icon-align-right
+			a(href="").btn
+				i.icon-align-justify
+		.btn-group
+			a(href="").btn
+				i.icon-print
+			a(href="").btn
+				i.icon-download-alt
+			a(href="").btn
+				i.icon-repeat
+		.btn-group
+			a(href="").btn.sidebar#peak-mode
+				i.icon-eye-close
+				i.icon-eye-open
+
+	.btn-toolbar#myCanvas-bar
+		.btn-group
+			a(href="").btn#draw-button
+				img(src="/images/draw-mode.png").menu-button
+			a(href="").btn
+				i.icon-font
+			a(href="").btn#erase-button
+				img(src="/images/eraser.png").menu-button
+			a(href="").btn
+				i.icon-trash
+
+		.btn-group
+			a(href="").btn
+				i.icon-camera
+			a(href="").btn
+				i.icon-print
+			a(href="").btn
+				i.icon-repeat
+
 	.canvas.border
 		canvas(height="600px",width="500px")#myCanvas.canvas
 		form#colab-container
-			textarea(rows="20")#colab.field.span6
+			textarea(rows="30",style="width: 500px")#colab
 		script
 			mobwrite.share("colab");
+	div(style="position: fixed;")#sidebar
+		a(href="").btn.sidebar.btn-success#edit-mode
+			img(src="/images/edit-mode.png")
+		br
+		br
+		a(href="").btn.sidebar#draw-mode
+			img(src="/images/draw-mode.png")
+		
+	
 
 block content
 	#last-edit Last edited by #{last_editor} at #{last_editor_time} 
 	form(action="/send", method="post")
-		input(type="text",length="140",name="tweet")
+		input(type="text",length="160",name="tweet")
 		input(type="submit",value="Tweet")
 
 	div= title 

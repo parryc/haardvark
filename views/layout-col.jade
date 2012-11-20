@@ -18,6 +18,9 @@ html(lang='en')
 					$('.column-menu').click(function(){
 						toggleHeader(this);
 						});
+					$('.btn').click(function(e){
+						e.preventDefault();
+					});
 					function toggleHeader(el){
 						var id = el.id;
 						$('#'+id).next().next().toggle();
@@ -67,7 +70,7 @@ html(lang='en')
 									.column-content
 										| THIS IS THE CONTENT OF THE DUE DATES!
 							
-				.span10
+				.span10(style="padding-left: 50px")
 					block canvas
 					block content
 		block footer
