@@ -79,10 +79,27 @@ app.post('/login', express.bodyParser(), function(req, res){
 
 });
 
+/**********
+Manage Groups
+***********/
 app.get('/groups', express.bodyParser(), function(req, res){
 	res.render('groups.jade', {
 		'title': "Groups",
-		'username': req.session.uid
+		'username': req.session.uid,
+		groups: {	"group1": {"name": "test",
+					"lastedit": "date",
+					"upcoming": "up"}}
+	});
+});
+
+app.get('/groups/:name', express.bodyParser(), function(req, res){
+	res.render('doc.jade', {
+		'title': "Groups - " + req.params.name,
+		'username': req.session.uid,
+		'groupname': "Groupname",
+		docs: {	"doc1": {"name": "test",
+					"lastedit": "date",
+					"upcoming": "up"}}
 	});
 });
 
@@ -93,6 +110,20 @@ app.get('/doc', function(req, res) {
 			'last_editor' : 'Jonathan',
 			'last_editor_time' : 'Seconds ago',
 			stylesheets: ['/stylesheets/style.styl']
+	});
+});
+
+app.get('/editor/:doc', function(req, res){
+	res.render('editor.jade',{
+		'title': 'Editor - ' + req.params.doc,
+		'username': req.session.uid,
+		'docname': "docname",
+		'docurl': "test",
+		'last_editor' : 'Jonathan',
+		'last_editor_time' : 'Seconds ago',
+		docinfo: {
+			'text': "texty text text!  I think most of this is giong to have to be socket.io emits. e.g. emit(editor:ready)"
+		}
 	});
 });
 

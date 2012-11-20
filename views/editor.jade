@@ -1,0 +1,88 @@
+extends layout-col
+
+block titlepart
+	| #{title}
+
+block username
+	| Write a good one, #{username}
+
+block location
+	| #{docname}
+
+block breadcrumbs
+	span.divider
+		>
+	a(href="/groups")
+		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
+	span.divider
+		>
+	a(href="/groups/#{docurl}")
+		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
+
+block page-scripts
+	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
+	script 
+		$(document).ready(function(){
+			window.erase = false;
+			$('#erasemode').change(function(){
+				//var canvasWidth = $('#myCanvas').attr("width");
+				//$('#myCanvas').attr("width",canvasWidth*.9);
+				if(window.erase)
+					window.erase = false;
+				else
+					window.erase = true;
+			});
+
+			var socket = io.connect('/')
+			socket.on('updatechat', function(data){
+				$('#container').append(data);
+				console.log(data);
+			});
+
+			socket.on('notification', function (data) {
+				console.log(data);
+				$('#container').html(data.test.name);
+				$('time').html('Last Update:' + data.time);
+			});
+
+			$('#data').change( function() {
+				var message = $('#data').val();
+				$('#data').val('');
+				// tell server to execute 'sendchat' and send along one parameter
+				socket.emit('sendchat', message);
+			});
+		});
+
+block members
+	div
+		.column-menu.no-select#members Members
+			span.chevron
+				i.icon-chevron-up
+				i.icon-chevron-down
+		a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+			i.icon-plus
+			
+		.column-content
+			ul
+				li member 1
+				li member 2
+				li member 3
+
+block canvas
+	input(type="checkbox")#erasemode
+	.canvas.border
+		canvas(height="600px",width="500px")#myCanvas.canvas
+		form#colab-container
+			textarea(rows="20")#colab.field.span6
+		script
+			mobwrite.share("colab");
+
+block content
+	#last-edit Last edited by #{last_editor} at #{last_editor_time} 
+	form(action="/send", method="post")
+		input(type="text",length="140",name="tweet")
+		input(type="submit",value="Tweet")
+
+	div= title 
+		| beaches #{title}
+	div#container content, bitches

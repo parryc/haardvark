@@ -21,8 +21,8 @@ html(lang='en')
 					function toggleHeader(el){
 						var id = el.id;
 						$('#'+id).next().next().toggle();
-						$('#'+id+ " .icon-chevron-down").toggle();
-						$('#'+id+ " .icon-chevron-up").toggle();
+						$('#'+id+ " .chevron .icon-chevron-down").toggle();
+						$('#'+id+ " .chevron .icon-chevron-up").toggle();
 					}
 				});
 		block page-scripts
@@ -35,19 +35,13 @@ html(lang='en')
 		block header
 			.navbar
 				.navbar-inner
-					a(href="/",title="Haardvark").pull-left.brand.handwriting
-						h1 Haardvark
+					.pull-left.brand.handwriting
+						h1 
+							block location
 					ul(style="font-size: 2em;").breadcrumb
-						li
-							a(href="#") Hi
-							span.divider
-								>
-						li 
-							a(href="#") Team
-							span.divider
-								>
-						li 
-							a(href="#").dance Go!
+						a(href="/")#bread1
+							img(src="/images/breadcrumbs/home.png").breadcrumbicon
+						block breadcrumbs
 						li.pull-right 
 							block username
 				
@@ -59,30 +53,20 @@ html(lang='en')
 							#conversation
 								input(type="text",placeholder="Start chatting!")#data
 								//input(type="button",value="send")#datasend
-							div 
-								.column-menu.no-select#due-dates Due dates
-									span.chevron
-										i.icon-chevron-up
-										i.icon-chevron-down
-								a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
-									i.icon-plus
-								
-								.column-content
-									| THIS IS THE CONTENT OF THE DUE DATES!
+							block members
 							hr
-							div
-								.column-menu.no-select#members Members
-									span.chevron
-										i.icon-chevron-up
-										i.icon-chevron-down
-								a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
-									i.icon-plus
+							block duedates
+								div 
+									.column-menu.no-select#due-dates Due dates
+										span.chevron
+											i.icon-chevron-up
+											i.icon-chevron-down
+									a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+										i.icon-plus
 									
-								.column-content
-									ul
-										li member 1
-										li member 2
-										li member 3
+									.column-content
+										| THIS IS THE CONTENT OF THE DUE DATES!
+							
 				.span10
 					block canvas
 					block content

@@ -17,5 +17,17 @@ block content
 	h1.no-select#group-title Groups
 		a(href="#",style="margin-left: 10px").btn.btn-small
 			i.icon-plus
-	| Test test test lolz
-	| #{username}
+	table.table
+		thead
+			th Name
+			th Last Edit
+			th Upcoming Due Date
+			th Delete
+		tbody#group-data
+			each group in groups
+				tr 
+					td
+						a(href="/groups/#{group.name}")= group.name
+					td= group.lastedit
+					td= group.upcoming
+					td delete icon
