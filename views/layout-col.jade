@@ -18,7 +18,7 @@ html(lang='en')
 					$('.column-menu').click(function(){
 						toggleHeader(this);
 						});
-					$('.btn').click(function(e){
+					$('.btn').not('.view-link').click(function(e){
 						e.preventDefault();
 					});
 					function toggleHeader(el){
@@ -27,7 +27,23 @@ html(lang='en')
 						$('#'+id+ " .chevron .icon-chevron-down").toggle();
 						$('#'+id+ " .chevron .icon-chevron-up").toggle();
 					}
-				});
+
+					//*******
+					//Sockets
+					//*******
+					var socket = io.connect('/')
+					socket.on('updatechat', function(data){
+						$('#chatlog').append(data.message);
+						$('#chatlog').scrollTop($('#chatlog').prop("scrollHeight"));
+						console.log(data.message);
+					});
+
+					$('#msg').change( function() {
+						var message = $('#msg').val();
+						$('#msg').val('');
+						socket.emit('sendchat', {"message":message});
+					});
+						});
 		block page-scripts
 		block stylesheets
 			link(rel='stylesheet', href='/stylesheets/style.css')
@@ -42,7 +58,7 @@ html(lang='en')
 						h1 
 							block location
 					ul(style="font-size: 2em;").breadcrumb
-						a(href="/")#bread1
+						a(href="/groups")#bread1
 							img(src="/images/breadcrumbs/home.png").breadcrumbicon
 						block breadcrumbs
 						li.pull-right 
@@ -53,9 +69,7 @@ html(lang='en')
 				.span2
 					block column
 						div
-							#conversation
-								input(type="text",placeholder="Start chatting!")#data
-								//input(type="button",value="send")#datasend
+							block extra-info
 							block members
 							hr
 							block duedates
@@ -73,4 +87,8 @@ html(lang='en')
 				.span10(style="padding-left: 50px")
 					block canvas
 					block content
+		block chatbox
+			#chatbox(style="position: fixed; right: 10%; bottom: 0; height: 15em; word-wrap: break-word;").border.rounded
+				#chatlog(style="margin-top: 0em; height: 10em; overflow-y: scroll; width: 250px; padding: 15px")
+				input(type="text",placeholder="Start chatting!",style="margin-left: 10px; width: 250px")#msg
 		block footer

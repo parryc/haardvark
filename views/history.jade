@@ -1,0 +1,80 @@
+extends layout-col
+
+block titlepart
+	| #{title}
+
+block username
+	| Remember, #{username}
+
+block location
+	| #{docname} – History
+
+block page-scripts
+	script 
+		$(document).ready(function(){
+			$( "#slider" ).change(function(){
+				console.log(logslider($('#slider').val()));
+			});	
+		});
+
+		function logslider(position) {
+			// position will be between 0 and 100
+			var minp = 0;
+			var maxp = 100;
+
+			// The result are between 1 an 100
+			var minv = Math.log(1);
+			var maxv = Math.log(100);
+
+			// calculate adjustment factor
+			var scale = (maxv-minv) / (maxp-minp);
+
+			return Math.floor(Math.exp(minv + scale*(position-minp)));
+		}
+block page-styles
+
+block breadcrumbs
+	span.divider
+		>
+	a(href="/groups/#{groupurl}")
+		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
+	span.divider
+		>
+	a(href="/editor/#{docurl}")
+		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
+	span.divider
+		>
+	a(href="/editor/#{docurl}/viewhistory")
+		img(src="/images/breadcrumbs/history.png").breadcrumbicon
+
+block members
+	div
+		.column-menu.no-select#members Members
+			span.chevron
+				i.icon-chevron-up
+				i.icon-chevron-down
+		a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+			i.icon-plus
+			
+		.column-content
+			ul
+				li member 1
+				li member 2
+				li member 3
+block duedates
+	
+block chatbox
+
+
+block content
+	h1.no-select#group-title History
+		
+	.container-fluid
+		.row-fluid
+			.span10
+				#history
+					input(type="range",min="0",max="100",value="0",style="width: 500px")#slider
+				#revertbutton
+					a(href="").btn
+						i.icon-refresh 
+						| Revert

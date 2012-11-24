@@ -8,7 +8,8 @@
     "socket.io": "0.9.11",
     "xml2js": "0.2.x",
     "mobwrite": "0.0.2",
-    "connect": "2.7.0"
+    "connect": "2.7.0",
+    "mongoose": "3.4.0"
   },
   "engines": {
     "node": "0.8.x",

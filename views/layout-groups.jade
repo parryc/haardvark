@@ -15,15 +15,16 @@ html(lang='en')
 			link(rel='stylesheet', href='/stylesheets/fonts.css')
 			link(rel='stylesheet', href='/stylesheets/bootstrap.css')
 			link(rel='stylesheet', href='/stylesheets/bootstrap-responsive.css')
+		block page-styles
 	body 
 		block header
 			.navbar
 				.navbar-inner
-					a(href="/",title="Haardvark").pull-left.brand.handwriting
+					.pull-left.brand.handwriting
 						h1 Haardvark
 					ul(style="font-size: 2em;").breadcrumb
 						li
-							a(href="/")
+							a(href="/groups")
 								img(src="/images/breadcrumbs/home.png").breadcrumbicon
 							block breadcrumbs
 

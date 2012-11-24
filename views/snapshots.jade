@@ -4,10 +4,10 @@ block titlepart
 	| #{title}
 
 block username
-	| Fine bunch of docs you got there, #{username}
+	| Smile, #{username}
 
 block location
-	| #{groupname}
+	| #{docname} – Snapshots
 
 block page-scripts
 	script 
@@ -20,6 +20,10 @@ block breadcrumbs
 		>
 	a(href="/groups/#{groupurl}")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
+	span.divider
+		>
+	a(href="/editor/#{docurl}")
+		img(src="/images/breadcrumbs/camera.png").breadcrumbicon
 block members
 	div
 		.column-menu.no-select#members Members
@@ -34,11 +38,14 @@ block members
 				li member 1
 				li member 2
 				li member 3
+block duedates
+	
+block chatbox
+
 
 block content
-	h1.no-select#group-title Documents
-		a(href="#",style="margin-left: 10px").btn.btn-small
-			i.icon-plus
+	h1.no-select#group-title Snapshots
+		
 	.container-fluid
 		.row-fluid
 			.span10
@@ -46,13 +53,15 @@ block content
 					thead
 						th Name
 						th Last Edit
-						th Upcoming Due Date
+						th Notes
 						th Delete
 					tbody#group-data
-						each doc in docs
+						each snapshot in snapshots
 							tr 
 								td
-									a(href="/editor/#{doc.name}")= doc.name
-								td= doc.lastedit
-								td= doc.upcoming
-								td delete icon
+									a(href="##{snapshot.snapshoturl}",data-toggle="modal")= snapshot.name
+								td= snapshot.lastedit
+								td= snapshot.notes
+								td
+									a(href="").btn.rounded
+										i.icon-remove

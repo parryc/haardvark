@@ -10,7 +10,9 @@ var app = express(),
 	jade = require('jade'),
 	xml2js = require('xml2js'),
 	parser = new xml2js.Parser(),
-	mobwrite = require('mobwrite');
+	mobwrite = require('mobwrite'),
+	mongoose = require('mongoose');
+//	db = mongoose.createConnection('mongodb://localhost/haardvark');
 
 
 var mob = mobwrite({
@@ -48,23 +50,36 @@ app.configure('production', function() {
 });
 
 
-// Heroku won't actually allow us to use WebSockets
-// so we have to setup polling instead.
-// https://devcenter.heroku.com/articles/using-socket-io-with-node-js-on-heroku
-/*io.configure(function () {
-  io.set("transports", ["xhr-polling"]);
-  io.set("polling duration", 10);
-});*/
-
-
 //Socket.io connections
 var connections = {};
+
+/********************
+DEFINING THE DATABASE FOR GREAT SUCCESS!!
+********************/
+mongoose.connect('mongodb://localhost:27017/haardvark', function(err){
+	if (err)
+		console.log("Error, Will Robinson, Error!: "+err);
+});
+var chatSchema = new mongoose.Schema({
+	user: String,
+	message: String,
+	timestamp: { type: Date, default: Date.now }
+});
+
+var Chat = mongoose.model('Chat',chatSchema);
+
+//For debug, print out all of the cats! I mean, chats!
+Chat.find(
+	{user: "Mr. Tester"},
+	function(err, data){
+		console.log(data);
+	});
+
 
 /********************
 Application, bitches!
 ********************/
 
-var tweets = ['pie','test','pie2'];
 
 app.get('/', function(req, res) {
 	res.render('index.jade', {
@@ -96,6 +111,7 @@ app.get('/groups/:name', express.bodyParser(), function(req, res){
 	res.render('doc.jade', {
 		'title': "Groups - " + req.params.name,
 		'username': req.session.uid,
+		'groupurl': "test",
 		'groupname': "Groupname",
 		docs: {	"doc1": {"name": "test",
 					"lastedit": "date",
@@ -107,11 +123,16 @@ app.get('/groups/:name', express.bodyParser(), function(req, res){
 app.get('/doc', function(req, res) {
 	res.render('doc.jade', {
 			'title': 'Haardvark',
+			'username': req.session.uid,
 			'last_editor' : 'Jonathan',
 			'last_editor_time' : 'Seconds ago',
 			stylesheets: ['/stylesheets/style.styl']
 	});
 });
+
+/****
+Editor mode
+*****/
 
 app.get('/editor/:doc', function(req, res){
 	res.render('editor.jade',{
@@ -123,6 +144,38 @@ app.get('/editor/:doc', function(req, res){
 		'last_editor_time' : 'Seconds ago',
 		docinfo: {
 			'text': "texty text text!  I think most of this is giong to have to be socket.io emits. e.g. emit(editor:ready)"
+		}
+	});
+});
+
+app.get('/editor/:doc/viewsnapshots', function(req, res){
+	res.render('snapshots.jade',{
+		'title': 'View Snapshots - ' + req.params.doc,
+		'username': req.session.uid,
+		'docname': "docname",
+		'docurl': "test",
+		'groupurl': "test",
+		snapshots: {"snapshot1":
+					{"name": "test",
+					"lastedit": "date",
+					"notes": "notey note notes",
+					"snapshotur": "url!"}
+		}
+	});
+});
+
+app.get('/editor/:doc/viewhistory', function(req, res){
+	res.render('history.jade',{
+		'title': 'View History - ' + req.params.doc,
+		'username': req.session.uid,
+		'docname': "docname",
+		'docurl': "test",
+		'groupurl': "test",
+		snapshots: {"snapshot1":
+					{"name": "test",
+					"lastedit": "date",
+					"notes": "notey note notes",
+					"snapshotur": "url!"}
 		}
 	});
 });
@@ -140,13 +193,6 @@ app.post('/send', express.bodyParser(), function(req, res) {
 	}
 });
 
-app.get('/tweets', function(req,res) {
-	res.send(tweets);
-});
-
-app.get('/tweets/:id', function(req,res){
-	res.send(tweets[req.params.id]);
-});
 
 
 /********
@@ -167,6 +213,7 @@ io.configure(function (){
 				return callback('No session found', false);
 			handshakeData.session = session;
 			//session start!
+			console.log(handshakeData);
 			return callback(null, true);
 			
 		});
@@ -174,10 +221,32 @@ io.configure(function (){
 });
 io.sockets.on( 'connection', function ( socket ) {
 	socket.join(socket.handshake.sessionID);//Join a session
-	//console.log("Session with ID " + socket.handshake.sessionID + " started.");
-	// when the client emits 'sendchat', this listens and executes
+	var session = socket.handshake.session;
+	console.log("Session: " + session);
 	socket.on('sendchat', function (data) {
-		io.sockets.emit('updatechat', data);
+		//TODO: add color and stuff to each new connection
+		//TODO: add timestamp.
+		//TODO: load chatlog
+		//TODO: add rooms
+
+		//Setup output for chats:
+		//Broadcast right aligned
+		//Emit left aligned
+		var message = data.message;
+		var rightalign = "<span class='msg-right'>"+message+"</span><br/>";
+		data.message = rightalign;
+		socket.broadcast.emit('updatechat',data);
+		var leftalign = "<span>"+message+"</span><br/>";
+		data.message = leftalign;
+		socket.emit('updatechat', data);
+
+		//Save chat msg to database!
+		var msg = new Chat(
+				{user:session.uid,message:message}
+			);
+		msg.save();
+		console.log(data);
+
 	});
 	
 	socket.on('drawing_finished', function(data){
