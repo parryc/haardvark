@@ -60,21 +60,66 @@ mongoose.connect('mongodb://localhost:27017/haardvark', function(err){
 	if (err)
 		console.log("Error, Will Robinson, Error!: "+err);
 });
-var chatSchema = new mongoose.Schema({
-	user: String,
+
+Schema = mongoose.Schema;
+
+var userSchema = new Schema({
+	username: String,
+	password: String,
+	email: String,
+	color: String,
+	_registrationDate: { type: Date, default: Date.now }
+});
+var User = mongoose.model('User',userSchema);
+
+var groupSchema = new Schema({
+	name: String,
+	members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+	documents: [{ type: Schema.Types.ObjectId, ref: 'Document'}],
+	chatlog: [{ type: Schema.Types.ObjectId, ref: 'Msg'}],
+	_creationDate: { type: Date, default: Date.now}
+});
+
+var Group = mongoose.model('Group',groupSchema);
+
+var documentSchema = new Schema({
+	name: String,
+	lastEdit: Date,
+	lastEditedBy: { type: Schema.Types.ObjectId, ref: 'User'},
+	notes: String,
+	snapshots: [{ type: Schema.Types.ObjectId, ref: 'Snapshot' }],
+	history: [String],
+	chatlog: [{ type: Schema.Types.ObjectId, ref: 'Msg'}],
+	_creationDate: { type: Date, default: Date.now}
+});
+
+var Document = mongoose.model('Document',documentSchema);
+
+var snapshotSchema = new Schema({
+	imageLocation: String,
+	note: String,
+	creator: { type: Schema.Types.ObjectId, ref: 'User'},
+	creationDate: { type: Date, default: Date.now}
+});
+
+var Snapshot = mongoose.model('Snapshot', snapshotSchema);
+
+var msgSchema = new Schema({
+	username: String,
 	message: String,
 	timestamp: { type: Date, default: Date.now }
 });
+var Msg = mongoose.model('Msg',msgSchema);
 
-var Chat = mongoose.model('Chat',chatSchema);
+
 
 //For debug, print out all of the cats! I mean, chats!
-Chat.find(
-	{user: "Mr. Tester"},
+/*User.find(
+	{},
 	function(err, data){
 		console.log(data);
 	});
-
+*/
 
 /********************
 Application, bitches!
@@ -90,6 +135,13 @@ app.get('/', function(req, res) {
 app.post('/login', express.bodyParser(), function(req, res){
 	//la la la do some authorization
 	req.session.uid = req.body.username;
+	User.findOne({username:req.body.username},function(err,user){
+		console.log(user);
+		console.log(user.color);
+			req.session.color = user.color;
+			console.log("color " + req.session.color);
+
+	});
 	res.redirect('/groups');
 
 });
@@ -101,6 +153,7 @@ app.get('/groups', express.bodyParser(), function(req, res){
 	res.render('groups.jade', {
 		'title': "Groups",
 		'username': req.session.uid,
+		'color': req.session.color,
 		groups: {	"group1": {"name": "test",
 					"lastedit": "date",
 					"upcoming": "up"}}
@@ -241,8 +294,8 @@ io.sockets.on( 'connection', function ( socket ) {
 		socket.emit('updatechat', data);
 
 		//Save chat msg to database!
-		var msg = new Chat(
-				{user:session.uid,message:message}
+		var msg = new Msg(
+				{username:session.uid,message:message}
 			);
 		msg.save();
 		console.log(data);
@@ -257,23 +310,28 @@ io.sockets.on( 'connection', function ( socket ) {
 		socket.broadcast.emit('erasepath',data);
 	});
 
+	socket.on('register',function(data){
+		console.log(data);
+		//TODO: Better color selection, like no yellows etc.
+		var r = Math.floor((Math.random()*255)+1);
+		var g = Math.floor((Math.random()*255)+1);
+		var b = Math.floor((Math.random()*255)+1);
+		var color = "rgb("+r+","+g+","+b+")";
 
-
-  // watching the xml file
-  fs.watch( 'chatlog.xml', function ( curr, prev ) {
-	// on file change we can read the new xml
-	fs.readFile( 'chatlog.xml', function ( err, data ) {
-		if ( err ) throw err;
-		// parsing the new xml datas and converting them into json file
-		parser.parseString( data );
+		//TODO: Salt and hash that password!
+		var newUser = new User({
+			"username": data.username,
+			"password": data.password,
+			"email": data.email,
+			"color": color
+		});
+		newUser.save(function(err){
+			if(err)
+				socket.emit('register-error',{"error":err});
+			else
+				socket.emit('register-success',{"username":data.username});
+		});
 	});
-  });
-  // when the parser ends the parsing we are ready to send the new data to the frontend page
-  parser.addListener('end', function( result ) {
-	// adding the time of the last update
-	result.time = new Date();
-	socket.volatile.emit( 'notification' , result );
-  });
 });
 
 //SERVE THE SHIT!

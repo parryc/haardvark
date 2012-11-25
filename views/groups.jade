@@ -9,13 +9,26 @@ block username
 block page-scripts
 	script 
 		$(document).ready(function(){
-		
+			$('#create-group-link').click(function(){$('#create-group').modal()});
+
+			$('#create').click(function(e){
+				socket.emit('group-create',{
+					"name":$('#group-name').val(),
+					"notes":$('#notes').val(),
+					"emails":$('#members-emails').val()
+					});
+
+				$('#create-group').modal('hide');
+			});
+			socket.on('group-created',function(data){
+				//Append to the group list
+			});
 		});
 
 
 block content
 	h1.no-select#group-title Groups
-		a(href="#",style="margin-left: 10px").btn.btn-small
+		a(href="#create-group",style="margin-left: 10px").btn.btn-small#create-group-link
 			i.icon-plus
 	table.table
 		thead
@@ -31,3 +44,20 @@ block content
 					td= group.lastedit
 					td= group.upcoming
 					td delete icon
+
+	div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true")#create-group.modal.hide.fade
+		.modal-header
+			button(type="button",data-dismiss="modal",aria-hidden="true").close x
+			| Create Group
+		.modal-body
+			| Group name:
+			input(type="text")#group-name
+			br
+			| Notes:
+			textarea(placeholder="Description of group")#notes
+			br
+			| Add group members: 
+			br
+			textarea(placeholder="List of member's emails")#members-emails
+		.modal-footer
+			button(data-dismiss="modal",aria-hidden="true").btn#create Create!

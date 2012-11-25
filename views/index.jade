@@ -3,17 +3,29 @@ extend minimal-layout
 block page-scripts
 	script
 		$(document).ready(function(){
-			/*var socket = io.connect('/');
-			$('#signin').click(function(e){
+			$('#register-link').click(function(){$('#register').modal()});
+			$('#forgetful-link').click(function(){$('#forgetful').modal()});
+			var socket = io.connect('/');
+			$('#send-registration').click(function(e){
 				//HASH THAT SOLDIER BOY
-				socket.emit('login',{"username":$('#username').val(),"password":$('#password').val()});
-				e.preventDefault();
-			});*/
-			/*socket.on('logincheck', function(data){
-				alert(data.success+data.username);
-				if(data.success)
-					window.location.href = '/groups?heythere='+data.username;
-			});*/
+				socket.emit('register',{
+					"username":$('#new-username').val(),
+					"password":$('#new-password').val(),
+					"email":$('#new-email').val()
+					});
+
+				$('#register-body').html("Sending registration...");
+			});
+			socket.on('register-success',function(data){
+				console.log(data);
+				$('#register-body').html(
+					"Go ahead and sign in, " + data.username + "!"
+					);
+				});
+			socket.on('register-error',function(data){
+				$('#register-body').html(
+					"Error, Will Robinson, Error!: " + data.error);
+				});
 		});
 
 block form
@@ -30,7 +42,38 @@ block form
 					button(type="submit",formaction="\login",formmethod="post").btn#signin Sign in
 			
 			br
-			a(href="/forgetful") Forgot password
+			a(href="#forgetful")#forgetful-link Forgot password
 			|&nbsp;&nbsp;•&nbsp;&nbsp;
-			a(href="/register") Register
+			a(href="#register",data-toggel="modal")#register-link Register
  
+
+	div(tabindex="-1",role="dialog",aria-labelledby="registerLabel",aria-hidden="true")#register.modal.hide.fade
+		.modal-header
+			button(type="button",data-dismiss="modal",aria-hidden="true").close x
+			| Register
+		.modal-body#register-body
+			| Username:
+			input(type="text")#new-username
+			br
+			| Email:
+			input(type="text")#new-email
+			br
+			| Password:
+			input(type="password")#new-password
+			br
+			| Re-enter Password:
+			input(type="password")#reenter-password
+		.modal-footer
+			button.btn.btn-primary#send-registration Register
+			button(data-dismiss="modal",aria-hidden="true").btn Close
+
+	div(tabindex="-1",role="dialog",aria-labelledby="forgetfulLabel",aria-hidden="true")#forgetful.modal.hide.fade
+		.modal-header
+			button(type="button",data-dismiss="modal",aria-hidden="true").close x
+			| Forgot your password?
+		.modal-body
+			| Enter your email below to have a new password sent to your inbox
+			input(type="text",placeholde="Enter email")#email
+		.modal-footer
+			button(data-dismiss="modal",aria-hidden="true").btn Send!
+
