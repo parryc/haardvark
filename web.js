@@ -89,6 +89,7 @@ var documentSchema = new Schema({
 	snapshots: [{ type: Schema.Types.ObjectId, ref: 'Snapshot' }],
 	history: [{ type: Schema.Types.ObjectId, ref: 'History' }],
 	chatlog: [{ type: Schema.Types.ObjectId, ref: 'Msg'}],
+	drawing: [Schema.Types.Mixed],
 	_creationDate: { type: Date, default: Date.now}
 });
 
@@ -230,7 +231,7 @@ app.get('/editor/:group/:doc', function(req, res){
 	});
 });
 
-app.get('/editor/:doc/viewsnapshots', function(req, res){
+app.get('/editor/:group/:doc/viewsnapshots', function(req, res){
 	res.render('snapshots.jade',{
 		'title': 'View Snapshots - ' + req.params.doc,
 		'username': req.session.uid,
@@ -246,7 +247,7 @@ app.get('/editor/:doc/viewsnapshots', function(req, res){
 	});
 });
 
-app.get('/editor/:doc/viewhistory', function(req, res){
+app.get('/editor/:group/:doc/viewhistory', function(req, res){
 	res.render('history.jade',{
 		'title': 'View History - ' + req.params.doc,
 		'username': req.session.uid,
@@ -439,12 +440,45 @@ io.sockets.on( 'connection', function ( socket ) {
 		});
 
 	});
+
+	/*********
+	Drawing
+	**********/
+	socket.on('drawing-load',function(data){
+		Document.findOne({name: data.doc},function(err,doc){
+			/*lines = [];
+			var len = doc.drawing.length;
+
+			while(len--){
+				lines.push(doc.drawing[len]);
+			}
+			console.log(lines);*/
+			socket.emit('drawing-loaded',{lines: doc.drawing});
+		});
+	});
 	
 	socket.on('drawing_finished', function(data){
+		Document.findOneAndUpdate({name: data.doc},{$push : {drawing : { uid: data.uid, points: data.points}}},{upsert: true},function(err,doc){
+			//console.log(doc.drawing[0].points);
+		});
 		socket.broadcast.emit('updatedrawing',data);
 	});
 
 	socket.on('erase', function(data){
+		Document.findOne({name: data.doc},function(err,doc){
+			var len = doc.drawing.length;
+
+			while(len--){
+				var line = doc.drawing[len];
+				if(line.uid === data.uid){
+				//	console.log(doc.drawing);
+					doc.drawing.splice(len,len+1);
+					doc.markModified('drawing');
+					doc.save();
+				//	console.log(doc.drawing);
+				}
+			}
+		});
 		socket.broadcast.emit('erasepath',data);
 	});
 

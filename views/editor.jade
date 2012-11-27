@@ -23,8 +23,14 @@ block page-scripts
 	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
 	script 
 		$(document).ready(function(){
+			var socket = io.connect('/');
+
+
 			var groupname = "#{name}";
 			var username= "#{username}";
+			window.docname = "#{name}"; // until a better solution is found for passing this info to the whiteboard
+
+			socket.emit('drawing-load',{doc: window.docname});
 
 			$('#myCanvas').hide();
 			$('#myCanvas-bar').hide();
