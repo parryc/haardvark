@@ -16,10 +16,12 @@ block page-scripts
 			var socket = io.connect('/');
 			var groupname = "#{group}";
 			var username= "#{username}";
+			var maxPos = #{historyLength};
 			window.docname = "#{name}"; // until a better solution is found for passing this info to the whiteboard
 
 			$( "#slider" ).change(function(){
-				var pos = logslider($('#slider').val())-1;
+				var pos = logslider($('#slider').val());
+				pos = maxPos-pos;
 				socket.emit('history-lookup',{pos: pos, doc: window.docname});
 			});	
 
