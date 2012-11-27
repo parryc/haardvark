@@ -107,7 +107,7 @@ var snapshotSchema = new Schema({
 var Snapshot = mongoose.model('Snapshot', snapshotSchema);
 
 var historySchema = new Schema({
-	date: Date,
+	date: { type: Date, default: Date.now},
 	content: String
 });
 
@@ -246,19 +246,17 @@ app.get('/editor/:group/:doc/viewsnapshots', function(req, res){
 });
 
 app.get('/editor/:group/:doc/viewhistory', function(req, res){
-	res.render('history.jade',{
-		'title': 'View History - ' + req.params.doc,
-		'username': req.session.uid,
-		'docname': "docname",
-		'docurl': "test",
-		'groupurl': "test",
-		members: doc.members,
-		snapshots: {"snapshot1":
-					{"name": "test",
-					"lastedit": "date",
-					"notes": "notey note notes",
-					"snapshotur": "url!"}
-		}
+	Document.findOne({name:req.params.doc}).populate('history').exec(function(err,doc){
+		Group.findOne({name:req.params.group}).populate('members').exec(function(err,group){
+			var numHistories = doc.history.length;
+			res.render('history.jade',{
+				'name': req.params.doc,
+				'group': req.params.group,
+				'username': req.session.uid,
+				members: group.members,
+				historyLength: numHistories
+			});
+		});
 	});
 });
 
@@ -360,8 +358,8 @@ io.sockets.on( 'connection', function ( socket ) {
 
 						//TODO: Code to decide if it should be all names or "Name, Name, ...";
 						//Probably, if total length < some threshhold
-						data.memberNames = "Peter, Paul, Mary, "+session.uid;
-
+						//data.memberNames = "Peter, Paul, Mary, "+session.uid;
+						data.memberNames = session.uid;
 						socket.emit('group-created',data);
 
 						});
@@ -427,6 +425,34 @@ io.sockets.on( 'connection', function ( socket ) {
 				});
 			}
 			
+		});
+	});
+
+	//History\\
+	socket.on('history-save', function(data){
+		var history = new History({
+			content: data.text
+		});
+		history.save();
+		var now = Date.now();
+		Document.findOneAndUpdate({name: data.doc},{$push :{history:history}},function(err,doc){
+			if(session.uid === 'undefined')
+				data.lastEditedBy = "tester";//session.uid;
+			else
+				data.lastEditedBy = session.uid;
+			data.lastEdit = now;
+			Document.findOneAndUpdate({name: data.doc},{lastEdit : data.lastEdit, lastEditedBy: data.lastEditedBy},function(err,doc2){
+				io.sockets.emit('history-saved',data);
+			});
+		});
+	});
+
+	socket.on('history-lookup', function(data){
+		console.log(data);
+		Document.findOne({name: data.doc}).populate('history').exec(function(err,doc){
+			console.log(doc.history[3].content);
+			console.log(data.pos);
+			io.sockets.emit('history-lookedup',{text: doc.history[data.pos].content, date: doc.history[data.pos].date});
 		});
 	});
 

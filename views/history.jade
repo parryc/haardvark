@@ -1,20 +1,32 @@
 extends layout-col
 
 block titlepart
-	| #{title}
+	| History - #{name}
 
 block username
 	| #{username}
 
 block location
-	| #{docname} – History
+	| #{name} - History
+
 
 block page-scripts
 	script 
 		$(document).ready(function(){
+			var socket = io.connect('/');
+			var groupname = "#{group}";
+			var username= "#{username}";
+			window.docname = "#{name}"; // until a better solution is found for passing this info to the whiteboard
+
 			$( "#slider" ).change(function(){
-				console.log(logslider($('#slider').val()));
+				var pos = logslider($('#slider').val())-1;
+				socket.emit('history-lookup',{pos: pos, doc: window.docname});
 			});	
+
+			socket.on('history-lookedup',function(data){
+				$('#history-text').val(data.text);
+				$('#date').html(data.date);
+			});
 		});
 
 		function logslider(position) {
@@ -22,9 +34,10 @@ block page-scripts
 			var minp = 0;
 			var maxp = 100;
 
-			// The result are between 1 an 100
+			// The result are between 0 and the number of history revisions
+			//Todo: Shit, gotta reverse this data, oh well. 
 			var minv = Math.log(1);
-			var maxv = Math.log(100);
+			var maxv = Math.log(#{historyLength});
 
 			// calculate adjustment factor
 			var scale = (maxv-minv) / (maxp-minp);
@@ -36,15 +49,15 @@ block page-styles
 block breadcrumbs
 	span.divider
 		>
-	a(href="/groups/#{groupurl}")
+	a(href="/groups/#{group}")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
 	span.divider
 		>
-	a(href="/editor/#{docurl}")
+	a(href="/editor/#{group}/#{name}")
 		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
 	span.divider
 		>
-	a(href="/editor/#{docurl}/viewhistory")
+	a(href="/editor/#{group}/#{name}/viewhistory")
 		img(src="/images/breadcrumbs/history.png").breadcrumbicon
 
 block members
@@ -53,14 +66,14 @@ block members
 			span.chevron
 				i.icon-chevron-up
 				i.icon-chevron-down
-		a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+		a(href="#add-member",style="margin-top: -22px").btn.btn-small.pull-right#add-member-link
 			i.icon-plus
 			
 		.column-content
-			ul
-				li member 1
-				li member 2
-				li member 3
+			each member in members
+				div(style="background: #{member.color}").color-div
+				| #{member.username}
+				br
 block duedates
 	
 block chatbox
@@ -72,8 +85,13 @@ block content
 	.container-fluid
 		.row-fluid
 			.span10
-				#history
-					input(type="range",min="0",max="100",value="0",style="width: 500px")#slider
+				form#history
+					textarea(rows="30",style="width: 500px")#history-text
+				input(type="range",min="0",max="100",value="0",style="width: 500px")#slider
+				br
+				| Date: 
+				#date
+				br
 				#revertbutton
 					a(href="").btn
 						i.icon-refresh 

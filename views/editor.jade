@@ -96,6 +96,26 @@ block page-scripts
 				$('#create-snapshot').modal();
 			});
 
+
+			var typingTimeout;
+			$('#colab').keyup(function(){
+				if(typingTimeout != undefined)
+					clearTimeout(typingTimeout);
+				typingTimeout = setTimeout(saveHistory, 300);
+			});
+
+			function saveHistory(){
+				var history = $('#colab').val();
+				socket.emit('history-save',{text: history, doc:window.docname});
+			}
+
+			socket.on('history-saved', function(data){
+				$('#lastEditedBy').html(data.lastEditedBy);
+				var d = new Date(data.lastEdit);
+				$('#lastEdit').html(""+d);
+			});
+
+
 			$('#save').click(function(){
 				var canvas = document.getElementById("myCanvas");
 				var img    = canvas.toDataURL("image/png");
@@ -157,7 +177,10 @@ block members
 				br
 
 block canvas
-	| Last edited by #{lastEditedBy} at #{lastEdit}
+	| Last edited by 
+	span#lastEditedBy #{lastEditedBy}
+	|  at 
+	span#lastEdit #{lastEdit}
 
 	.btn-toolbar#colab-bar
 		.btn-group
