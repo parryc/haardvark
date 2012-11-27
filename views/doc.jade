@@ -15,13 +15,23 @@ block page-scripts
 			var groupname = "#{name}";
 			var username= "#{username}";
 			$('#create-document-link').click(function(){$('#create-document').modal()});
-			
+			//$('#chatlog').html("#{chatlog}");
 
 			//*******
 			//Sockets
 			//*******
 			var socket = io.connect('/')
-
+			
+			//On load, tell people you're connecting to the chat
+			socket.emit('chat-join',{username: username});
+			socket.on('chat-joined',function(data){
+				$('#on-list').html("");
+				data.chatusers.forEach(function(e){
+					var out = "<span style=\"color: "+e.color+"\">"+e.username+"</span> ";
+					$('#on-list').append(out);
+				});
+			});
+			
 			/// Create document \\\
 			//TODO: add file upload
 			$('#create').click(function(e){
@@ -79,7 +89,7 @@ block content
 						each doc in docs
 							tr 
 								td
-									a(href="/editor/#{doc.name}")= doc.name
+									a(href="/editor/#{name}/#{doc.name}")= doc.name
 								td 
 									| By #{doc.lastEditedBy} at #{doc.lastEdit}
 								if (doc.upcoming === '')
@@ -104,3 +114,12 @@ block content
 			| File upload disabled during testing
 		.modal-footer
 			button(data-dismiss="modal",aria-hidden="true").btn#create Create!
+
+block chatlog
+	each m in chatlog.msgs
+		if m.float
+			span(style="color: #{m.color}").msg-right #{m.message}
+			br
+		else
+			span(style="color: #{m.color}") #{m.message}
+			br

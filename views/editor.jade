@@ -1,28 +1,31 @@
 extends layout-col
 
 block titlepart
-	| #{title}
+	| Editor - #{name}
 
 block username
 	| Write a good one, #{username}
 
 block location
-	| #{docname}
+	| #{name}
 
 block breadcrumbs
 	span.divider
 		>
-	a(href="/groups/#{docurl}")
+	a(href="/groups/#{name}")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
 	span.divider
 		>
-	a(href="/editor/#{docurl}")
+	a(href="/editor/#{name}")
 		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
 
 block page-scripts
 	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
 	script 
 		$(document).ready(function(){
+			var groupname = "#{name}";
+			var username= "#{username}";
+
 			$('#myCanvas').hide();
 			$('#myCanvas-bar').hide();
 			$('#sidebar').css("left",$('#colab').position().left+$('#colab').width()+20);
@@ -109,12 +112,12 @@ block page-scripts
 		});
 
 block extra-info
-	a(href="/editor/#{docurl}/viewhistory").btn.view-link
+	a(href="/editor/#{name}/viewhistory").btn.view-link
 		i.icon-time
 		|  View History
 	br
 	br
-	a(href="/editor/#{docurl}/viewsnapshots").btn.view-link
+	a(href="/editor/#{name}/viewsnapshots").btn.view-link
 		i.icon-camera
 		|  View Snapshots
 	br
@@ -126,17 +129,17 @@ block members
 			span.chevron
 				i.icon-chevron-up
 				i.icon-chevron-down
-		a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+		a(href="#add-member",style="margin-top: -22px").btn.btn-small.pull-right#add-member-link
 			i.icon-plus
 			
 		.column-content
-			ul
-				li member 1
-				li member 2
-				li member 3
+			each member in members
+				div(style="background: #{member.color}").color-div
+				| #{member.username}
+				br
 
 block canvas
-	| Last edited by #{last_editor} at #{last_editor_time}
+	| Last edited by #{lastEditedBy} at #{lastEdit}
 
 	.btn-toolbar#colab-bar
 		.btn-group

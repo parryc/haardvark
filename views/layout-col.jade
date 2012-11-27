@@ -23,6 +23,7 @@ html(lang='en')
 					$('.btn').not('.view-link').click(function(e){
 						e.preventDefault();
 					});
+
 					function toggleHeader(el){
 						var id = el.id;
 						$('#'+id).next().next().toggle();
@@ -34,6 +35,7 @@ html(lang='en')
 					//Sockets
 					//*******
 					var socket = io.connect('/')
+
 					socket.on('updatechat', function(data){
 						$('#chatlog').append(data.message);
 						$('#chatlog').scrollTop($('#chatlog').prop("scrollHeight"));
@@ -92,10 +94,11 @@ html(lang='en')
 		block chatbox
 			#chatbox(style="position: fixed; right: 10%; bottom: 0; height: 15em; word-wrap: break-word;").border.rounded
 				#currently-on(style="background: #BBB; word-wrap: break-word; width: 100%") Currently on: 
-					| You!
+					span#on-list
 					span.pull-right
-						a(href="")
+						#close
 							i.icon-remove
 				#chatlog(style="margin-top: 0em; height: 10em; overflow-y: scroll; width: 250px; padding: 15px; font-size: .8em")
+					block chatlog
 				input(type="text",placeholder="Start chatting!",style="margin-left: 10px; width: 250px")#msg
 		block footer

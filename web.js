@@ -50,9 +50,6 @@ app.configure('production', function() {
 });
 
 
-//Socket.io connections
-var connections = {};
-
 /********************
 DEFINING THE DATABASE FOR GREAT SUCCESS!!
 ********************/
@@ -181,12 +178,32 @@ app.get('/groups', express.bodyParser(), function(req, res){
 
 app.get('/groups/:name', express.bodyParser(), function(req, res){
 	req.session.groupname = req.params.name;
-	Group.findOne({name: req.params.name}).populate('members').populate('documents').exec(function(err,group){
+	var chatlog = {msgs : []};
+	Group.findOne({name: req.params.name}).populate('members').populate('documents').populate('chatlog').exec(function(err,group){
+
+		var len = group.chatlog.length;
+		var i = 0;
+		while(i < len){
+			var msgUser = group.chatlog[i].username;
+			var message = group.chatlog[i].message;
+			var user = group.members.filter(function (user) { return user.username === msgUser; });
+			var color = user[0].color;
+			console.log(msgUser+" "+color+" "+message);
+			i++;
+			console.log(i+len);
+			if(msgUser === req.session.uid)
+				chatlog.msgs.push({"float": false, "color": color, "message": message });
+			else
+				chatlog.msgs.push({"float": true, "color": color, "message": message });
+			console.log(chatlog);
+		
+		}
 		res.render('doc.jade', {
 			'name': req.params.name,
 			'username': req.session.uid,
 			docs: group.documents,
-			members: group.members
+			members: group.members,
+			chatlog: chatlog
 		});
 	});
 });
@@ -196,17 +213,20 @@ app.get('/groups/:name', express.bodyParser(), function(req, res){
 Editor mode
 *****/
 
-app.get('/editor/:doc', function(req, res){
-	res.render('editor.jade',{
-		'title': 'Editor - ' + req.params.doc,
-		'username': req.session.uid,
-		'docname': "docname",
-		'docurl': "test",
-		'last_editor' : 'Jonathan',
-		'last_editor_time' : 'Seconds ago',
-		docinfo: {
-			'text': "texty text text!  I think most of this is giong to have to be socket.io emits. e.g. emit(editor:ready)"
-		}
+app.get('/editor/:group/:doc', function(req, res){
+	Document.findOne({name: req.params.doc},function(err,doc){
+		Group.findOne({name: req.params.group}).populate('members').exec(function(err,group){
+			res.render('editor.jade',{
+				'name': req.params.doc,
+				'username': req.session.uid,
+				'lastEditedBy' : doc.lastEditedBy,
+				'lastEdit' : doc.lastEdit,
+				members: group.members,
+				docinfo: {
+					'text': "texty text text!  I think most of this is giong to have to be socket.io emits. e.g. emit(editor:ready)"
+				}
+			});
+		});
 	});
 });
 
@@ -260,6 +280,9 @@ app.post('/send', express.bodyParser(), function(req, res) {
 /********
 I'll put a socket in your io
 *********/
+//Socket.io connections
+var connections = { chatusers : [] };
+
 //Handle all the sessions!?
 io.configure(function (){
 	io.set('authorization', function (handshakeData, callback) {
@@ -356,7 +379,7 @@ io.sockets.on( 'connection', function ( socket ) {
 			name: data.name,
 			notes: data.notes
 		});
-		//Attach the user as the last editor
+		//Attach the user as the last editor (TODO atm, it's just a string)
 		User.findOne({username:session.uid},function(err,user){
 			doc.lastEditedBy = session.uid;
 			doc.save();
@@ -372,6 +395,20 @@ io.sockets.on( 'connection', function ( socket ) {
 		});
 	});
 
+	/***********
+	C-c-c-chat breaker!
+	************/
+	socket.on('chat-join',function(data){
+		User.findOne({username: data.username},function(err,user){
+			data.color = user.color;
+			var check = connections.chatusers.filter(function (user) { return user.username === data.username; });
+			if(check.length === 0){
+				connections.chatusers.push(data);
+				console.log(connections);
+			}
+			io.sockets.emit('chat-joined',connections);
+		});
+	});
 	socket.on('sendchat', function(data) {
 		//TODO: add color and stuff to each new connection
 		//TODO: add timestamp.
