@@ -1,43 +1,70 @@
 extends layout-col
 
 block titlepart
-	| #{title}
+	| Group - #{name}
 
 block username
 	| Fine bunch of docs you got there, #{username}
 
 block location
-	| #{groupname}
+	| #{name}
 
 block page-scripts
 	script 
 		$(document).ready(function(){
-		
+			var groupname = "#{name}";
+			var username= "#{username}";
+			$('#create-document-link').click(function(){$('#create-document').modal()});
+			
+
+			//*******
+			//Sockets
+			//*******
+			var socket = io.connect('/')
+
+			/// Create document \\\
+			//TODO: add file upload
+			$('#create').click(function(e){
+				socket.emit('document-create',{
+					"name":$('#document-name').val(),
+					"notes":$('#notes').val(),
+					"group": groupname
+				});
+
+				$('#create-document').modal('hide');
+			});
+			socket.on('document-created',function(data){
+				//new group!
+				var row = "<tr><td><a href='/editor/'"+data.name+">"+data.name+"</a></td><td>"+data.lastedit+"</td><td>"+data.upcoming+"</td><td><a href=\"\" class=\"btn rounded\"><i class=\"icon-remove\"></i></a></td></tr>";
+				$('#document-data').append(row);
+			});
 		});
 
 block breadcrumbs
 	span.divider
 		>
-	a(href="/groups/#{groupurl}")
+	a(href="/groups/#{name}")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
+block duedates
 block members
 	div
 		.column-menu.no-select#members Members
 			span.chevron
 				i.icon-chevron-up
 				i.icon-chevron-down
-		a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+		a(href="#add-member",style="margin-top: -22px").btn.btn-small.pull-right#add-member-link
 			i.icon-plus
 			
 		.column-content
-			ul
-				li member 1
-				li member 2
-				li member 3
+			each member in members
+				div(style="background: #{member.color}").color-div
+				| #{member.username}
+				br
+
 
 block content
-	h1.no-select#group-title Documents
-		a(href="#",style="margin-left: 10px").btn.btn-small
+	h1.no-select#document-title Documents
+		a(href="#create-document",style="margin-left: 10px").btn.btn-small#create-document-link
 			i.icon-plus
 	.container-fluid
 		.row-fluid
@@ -48,11 +75,32 @@ block content
 						th Last Edit
 						th Upcoming Due Date
 						th Delete
-					tbody#group-data
+					tbody#document-data
 						each doc in docs
 							tr 
 								td
 									a(href="/editor/#{doc.name}")= doc.name
-								td= doc.lastedit
-								td= doc.upcoming
-								td delete icon
+								td 
+									| By #{doc.lastEditedBy} at #{doc.lastEdit}
+								if (doc.upcoming === '')
+									td No due dates set.
+								else
+									td= doc.upcoming
+								td
+									a(href="").btn.rounded
+										i.icon-remove
+
+	div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true")#create-document.modal.hide.fade
+		.modal-header
+			button(type="button",data-dismiss="modal",aria-hidden="true").close x
+			| Create Document
+		.modal-body
+			| Document name:
+			input(type="text")#document-name
+			br
+			| Notes:
+			textarea(placeholder="Description of document")#notes
+			br
+			| File upload disabled during testing
+		.modal-footer
+			button(data-dismiss="modal",aria-hidden="true").btn#create Create!

@@ -10,18 +10,20 @@ block page-scripts
 	script 
 		$(document).ready(function(){
 			$('#create-group-link').click(function(){$('#create-group').modal()});
-
+			var socket = io.connect('/');
 			$('#create').click(function(e){
 				socket.emit('group-create',{
 					"name":$('#group-name').val(),
 					"notes":$('#notes').val(),
 					"emails":$('#members-emails').val()
-					});
+				});
 
 				$('#create-group').modal('hide');
 			});
 			socket.on('group-created',function(data){
-				//Append to the group list
+				//new group!
+				var row = "<tr><td><a href='/groups/'"+data.name+">"+data.name+"</a><br/><span class='member-list'>"+data.memberNames+"</span></td><td>"+data.lastedit+"</td><td>"+data.upcoming+"</td><td><a href=\"\" class=\"btn rounded\"><i class=\"icon-remove\"></i></a></td></tr>";
+				$('#group-data').append(row);
 			});
 		});
 
@@ -41,9 +43,23 @@ block content
 				tr 
 					td
 						a(href="/groups/#{group.name}")= group.name
-					td= group.lastedit
-					td= group.upcoming
-					td delete icon
+						br
+						span.member-list
+							- var list = ""
+							each member in group.members
+								- list += member.username + ", "
+							= list.substring(0,list.length-2)
+					if (typeof group.documents[0] === 'undefined')
+						td No documents!
+					else
+						td Last edited by #{group.lastEditedBy} at #{group.lastEdit}
+					if (typeof group.documents[0] === 'undefined')
+						td No documents!
+					else
+						td= group.documents.upcoming
+					td
+						a(href="").btn.rounded
+							i.icon-remove
 
 	div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true")#create-group.modal.hide.fade
 		.modal-header

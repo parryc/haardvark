@@ -62,6 +62,7 @@ mongoose.connect('mongodb://localhost:27017/haardvark', function(err){
 });
 
 Schema = mongoose.Schema;
+ObjectId = mongoose.Types.ObjectId;
 
 var userSchema = new Schema({
 	username: String,
@@ -74,7 +75,7 @@ var User = mongoose.model('User',userSchema);
 
 var groupSchema = new Schema({
 	name: String,
-	members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+	members: [{ type: Schema.Types.ObjectId, ref: 'User'}],
 	documents: [{ type: Schema.Types.ObjectId, ref: 'Document'}],
 	chatlog: [{ type: Schema.Types.ObjectId, ref: 'Msg'}],
 	_creationDate: { type: Date, default: Date.now}
@@ -84,11 +85,12 @@ var Group = mongoose.model('Group',groupSchema);
 
 var documentSchema = new Schema({
 	name: String,
-	lastEdit: Date,
-	lastEditedBy: { type: Schema.Types.ObjectId, ref: 'User'},
+	lastEdit: { type: Date, default: Date.now},
+	lastEditedBy: String,
 	notes: String,
+	dueDates: [Date],
 	snapshots: [{ type: Schema.Types.ObjectId, ref: 'Snapshot' }],
-	history: [String],
+	history: [{ type: Schema.Types.ObjectId, ref: 'History' }],
 	chatlog: [{ type: Schema.Types.ObjectId, ref: 'Msg'}],
 	_creationDate: { type: Date, default: Date.now}
 });
@@ -103,6 +105,13 @@ var snapshotSchema = new Schema({
 });
 
 var Snapshot = mongoose.model('Snapshot', snapshotSchema);
+
+var historySchema = new Schema({
+	date: Date,
+	content: String
+});
+
+var History = mongoose.model('History', historySchema);
 
 var msgSchema = new Schema({
 	username: String,
@@ -133,15 +142,8 @@ app.get('/', function(req, res) {
 });
 
 app.post('/login', express.bodyParser(), function(req, res){
-	//la la la do some authorization
+	//TODO: authorization
 	req.session.uid = req.body.username;
-	User.findOne({username:req.body.username},function(err,user){
-		console.log(user);
-		console.log(user.color);
-			req.session.color = user.color;
-			console.log("color " + req.session.color);
-
-	});
 	res.redirect('/groups');
 
 });
@@ -150,38 +152,45 @@ app.post('/login', express.bodyParser(), function(req, res){
 Manage Groups
 ***********/
 app.get('/groups', express.bodyParser(), function(req, res){
-	res.render('groups.jade', {
-		'title': "Groups",
-		'username': req.session.uid,
-		'color': req.session.color,
-		groups: {	"group1": {"name": "test",
-					"lastedit": "date",
-					"upcoming": "up"}}
+	Group.find({}).populate('members').populate('documents').exec(function(err,grouplist){
+
+		var len = grouplist.length;
+
+		while(len--){
+			var date = new Date("June 20 1991");
+			var g = grouplist[len];
+			var doclen = g.documents.length;
+			console.log("len"+len);
+			while(doclen--) {//iterate over every doc in a group
+				console.log("doclen"+doclen);
+				var tempD = new Date(g.documents[doclen].lastEdit);
+				if(tempD > date){
+					date = tempD;
+					g.lastEditedBy = g.documents[doclen].lastEditedBy;
+					g.lastEdit = date;
+				}
+			}
+		}
+		res.render('groups.jade', {
+			'title': "Groups",
+			'username': req.session.uid,
+			groups: grouplist
+		});
 	});
 });
 
 app.get('/groups/:name', express.bodyParser(), function(req, res){
-	res.render('doc.jade', {
-		'title': "Groups - " + req.params.name,
-		'username': req.session.uid,
-		'groupurl': "test",
-		'groupname': "Groupname",
-		docs: {	"doc1": {"name": "test",
-					"lastedit": "date",
-					"upcoming": "up"}}
-	});
-});
-
-
-app.get('/doc', function(req, res) {
-	res.render('doc.jade', {
-			'title': 'Haardvark',
+	req.session.groupname = req.params.name;
+	Group.findOne({name: req.params.name}).populate('members').populate('documents').exec(function(err,group){
+		res.render('doc.jade', {
+			'name': req.params.name,
 			'username': req.session.uid,
-			'last_editor' : 'Jonathan',
-			'last_editor_time' : 'Seconds ago',
-			stylesheets: ['/stylesheets/style.styl']
+			docs: group.documents,
+			members: group.members
+		});
 	});
 });
+
 
 /****
 Editor mode
@@ -266,7 +275,7 @@ io.configure(function (){
 				return callback('No session found', false);
 			handshakeData.session = session;
 			//session start!
-			console.log(handshakeData);
+			//console.log(handshakeData);
 			return callback(null, true);
 			
 		});
@@ -275,8 +284,95 @@ io.configure(function (){
 io.sockets.on( 'connection', function ( socket ) {
 	socket.join(socket.handshake.sessionID);//Join a session
 	var session = socket.handshake.session;
-	console.log("Session: " + session);
-	socket.on('sendchat', function (data) {
+	
+
+	/****************
+		Groups
+	*****************/
+
+	socket.on('group-create', function (data) {
+
+		//Dummy group
+		var group = new Group({
+			name: data.name
+		});
+
+		//Waterfaaaaalllll
+		User.findOne({username:"Peter"},function(err,user){
+			group.members.push(user);
+			User.findOne({username:"Paul"},function(err,user){
+				group.members.push(user);
+				User.findOne({username:"Mary"},function(err,user){
+					group.members.push(user);
+					//Then add the actual group member
+					//For non-testing code, this would be the only lookup
+					User.findOne({username:session.uid},function(err,user){
+						if(user){
+							group.members.push(user);
+						} else {
+							//For testing, make a dummy user for the rest of the tests
+							var r = Math.floor((Math.random()*255)+1);
+							var g = Math.floor((Math.random()*255)+1);
+							var b = Math.floor((Math.random()*255)+1);
+							var color = "rgb("+r+","+g+","+b+")";
+
+							var curruser = new User({
+								username: session.uid,
+								password: "dummy",
+								email: "dummy",
+								color: color
+							});
+							curruser.save();
+							group.members.push(curruser);
+						}
+
+						console.log("new group: " + group);
+						group.save(function(err){
+							if(err)
+								console.log(err);
+						});
+
+						data.lastedit = "No Documents yet!";
+						data.upcoming = "No Documents yet!";
+
+						//TODO: Code to decide if it should be all names or "Name, Name, ...";
+						//Probably, if total length < some threshhold
+						data.memberNames = "Peter, Paul, Mary, "+session.uid;
+
+						socket.emit('group-created',data);
+
+						});
+				});
+			});
+		});
+	});
+
+
+	/*********
+	Documents
+	**********/
+	socket.on('document-create',function(data){
+		var doc = new Document({
+			name: data.name,
+			notes: data.notes
+		});
+		//Attach the user as the last editor
+		User.findOne({username:session.uid},function(err,user){
+			doc.lastEditedBy = session.uid;
+			doc.save();
+
+			//Save document to specific group
+			Group.findOneAndUpdate({name:data.group},{$push : {documents : doc}},function(err,group){
+				if(!err){
+					data.lastedit = "Just now";
+					data.upcoming = "No due dates set yet";
+					socket.emit('document-created',data);
+				}
+			});
+		});
+	});
+
+	socket.on('sendchat', function(data) {
 		//TODO: add color and stuff to each new connection
 		//TODO: add timestamp.
 		//TODO: load chatlog
@@ -291,14 +387,19 @@ io.sockets.on( 'connection', function ( socket ) {
 		socket.broadcast.emit('updatechat',data);
 		var leftalign = "<span>"+message+"</span><br/>";
 		data.message = leftalign;
-		socket.emit('updatechat', data);
-
+	
 		//Save chat msg to database!
-		var msg = new Msg(
-				{username:session.uid,message:message}
-			);
+		var msg = new Msg({
+				username:session.uid,
+				message:message
+			});
 		msg.save();
-		console.log(data);
+
+		Group.findOneAndUpdate({name:session.groupname},{$push : { chatlog : msg}},function(err,group){
+			console.log(data);
+			//update at the end of saving everything
+			socket.emit('updatechat', data);
+		});
 
 	});
 	
@@ -322,8 +423,8 @@ io.sockets.on( 'connection', function ( socket ) {
 		var newUser = new User({
 			"username": data.username,
 			"password": data.password,
-			"email": data.email,
-			"color": color
+			"color": color,
+			"email": data.email
 		});
 		newUser.save(function(err){
 			if(err)

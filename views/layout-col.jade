@@ -13,8 +13,10 @@ html(lang='en')
 			script(src="/javascripts/paper.js")
 			script
 				$(document).ready(function(){
+
 					$('.column-content').hide();
 					$('.icon-chevron-down').hide();
+					$('#minimize-chat').show();
 					$('.column-menu').click(function(){
 						toggleHeader(this);
 						});
@@ -43,7 +45,7 @@ html(lang='en')
 						$('#msg').val('');
 						socket.emit('sendchat', {"message":message});
 					});
-						});
+				});
 		block page-scripts
 		block stylesheets
 			link(rel='stylesheet', href='/stylesheets/style.css')
@@ -89,6 +91,11 @@ html(lang='en')
 					block content
 		block chatbox
 			#chatbox(style="position: fixed; right: 10%; bottom: 0; height: 15em; word-wrap: break-word;").border.rounded
-				#chatlog(style="margin-top: 0em; height: 10em; overflow-y: scroll; width: 250px; padding: 15px")
+				#currently-on(style="background: #BBB; word-wrap: break-word; width: 100%") Currently on: 
+					| You!
+					span.pull-right
+						a(href="")
+							i.icon-remove
+				#chatlog(style="margin-top: 0em; height: 10em; overflow-y: scroll; width: 250px; padding: 15px; font-size: .8em")
 				input(type="text",placeholder="Start chatting!",style="margin-left: 10px; width: 250px")#msg
 		block footer
