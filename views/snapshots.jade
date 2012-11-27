@@ -1,28 +1,35 @@
 extends layout-col
 
 block titlepart
-	| #{title}
+	| Snapshots - #{name}
 
 block username
-	| Smile, #{username}
+	| #{username}
 
 block location
-	| #{docname} – Snapshots
+	| #{name} - Snapshots
 
 block page-scripts
 	script 
 		$(document).ready(function(){
-		
+			$('.snap-link').click(function(){
+				var ref = $(this).attr("href").replace("#","");
+				$('#snap-'+ref).modal();
+			});
 		});
 
 block breadcrumbs
 	span.divider
 		>
-	a(href="/groups/#{groupurl}")
+	a(href="/groups/#{group}")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
 	span.divider
 		>
-	a(href="/editor/#{docurl}")
+	a(href="/editor/#{group}/#{name}")
+		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
+	span.divider
+		>
+	a(href="/editor/#{group}/#{name}/viewsnapshots")
 		img(src="/images/breadcrumbs/camera.png").breadcrumbicon
 block members
 	div
@@ -30,21 +37,21 @@ block members
 			span.chevron
 				i.icon-chevron-up
 				i.icon-chevron-down
-		a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
+		a(href="#add-member",style="margin-top: -22px").btn.btn-small.pull-right#add-member-link
 			i.icon-plus
 			
 		.column-content
-			ul
-				li member 1
-				li member 2
-				li member 3
+			each member in members
+				div(style="background: #{member.color}").color-div
+				| #{member.username}
+				br
 block duedates
 	
 block chatbox
 
 
 block content
-	h1.no-select#group-title Snapshots
+	h1.no-select#snapshot-title Snapshots
 		
 	.container-fluid
 		.row-fluid
@@ -52,16 +59,24 @@ block content
 				table.table
 					thead
 						th Name
-						th Last Edit
+						th Created On
+						th Created By
 						th Notes
 						th Delete
-					tbody#group-data
+					tbody#snapshot-data
 						each snapshot in snapshots
 							tr 
 								td
-									a(href="##{snapshot.snapshoturl}",data-toggle="modal")= snapshot.name
-								td= snapshot.lastedit
-								td= snapshot.notes
+									a(href="##{snapshot.name}",data-toggle="modal").snap-link #{snapshot.name}
+									div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true",id="snap-#{snapshot.name}").modal.hide.fade
+										.modal-header
+											| #{snapshot.name}
+											button(type="button",data-dismiss="modal",aria-hidden="true").close x
+										.modal-body
+											img(src="/#{snapshot.imageLocation}")
+								td= snapshot.creationDate
+								td= snapshot.creator
+								td= snapshot.note
 								td
 									a(href="").btn.rounded
 										i.icon-remove

@@ -96,9 +96,10 @@ var documentSchema = new Schema({
 var Document = mongoose.model('Document',documentSchema);
 
 var snapshotSchema = new Schema({
+	name: String,
 	imageLocation: String,
 	note: String,
-	creator: { type: Schema.Types.ObjectId, ref: 'User'},
+	creator: String,
 	creationDate: { type: Date, default: Date.now}
 });
 
@@ -219,31 +220,27 @@ app.get('/editor/:group/:doc', function(req, res){
 		Group.findOne({name: req.params.group}).populate('members').exec(function(err,group){
 			res.render('editor.jade',{
 				'name': req.params.doc,
+				'group': req.params.group,
 				'username': req.session.uid,
 				'lastEditedBy' : doc.lastEditedBy,
 				'lastEdit' : doc.lastEdit,
-				members: group.members,
-				docinfo: {
-					'text': "texty text text!  I think most of this is giong to have to be socket.io emits. e.g. emit(editor:ready)"
-				}
+				members: group.members
 			});
 		});
 	});
 });
 
 app.get('/editor/:group/:doc/viewsnapshots', function(req, res){
-	res.render('snapshots.jade',{
-		'title': 'View Snapshots - ' + req.params.doc,
-		'username': req.session.uid,
-		'docname': "docname",
-		'docurl': "test",
-		'groupurl': "test",
-		snapshots: {"snapshot1":
-					{"name": "test",
-					"lastedit": "date",
-					"notes": "notey note notes",
-					"snapshotur": "url!"}
-		}
+	Document.findOne({name:req.params.doc}).populate('snapshots').exec(function(err,doc){
+		Group.findOne({name:req.params.group}).populate('members').exec(function(err,group){
+			res.render('snapshots.jade',{
+				'name': req.params.doc,
+				'group': req.params.group,
+				'username': req.session.uid,
+				members: group.members,
+				snapshots: doc.snapshots
+			});
+		});
 	});
 });
 
@@ -254,6 +251,7 @@ app.get('/editor/:group/:doc/viewhistory', function(req, res){
 		'docname': "docname",
 		'docurl': "test",
 		'groupurl': "test",
+		members: doc.members,
 		snapshots: {"snapshot1":
 					{"name": "test",
 					"lastedit": "date",
@@ -393,6 +391,39 @@ io.sockets.on( 'connection', function ( socket ) {
 					socket.emit('document-created',data);
 				}
 			});
+		});
+	});
+
+
+	/***********
+	Editor
+	************/
+
+	//Snapshots\\
+	socket.on('snapshot-create',function(data){
+		var base64Data = data.img.replace(/^data:image\/png;base64,/,"");
+		var dataBuffer = new Buffer(base64Data, 'base64');
+		var timestamp = Date.now();
+		var dir = "images/snapshots/";
+		var loc = dir+timestamp+".png";
+		fs.writeFile("public/"+loc, dataBuffer, function(err) {
+			if(!err){
+				var snap = new Snapshot({
+					name: data.name,
+					imageLocation: loc,
+					creator: session.uid,
+					note: data.notes
+				});
+				snap.save();
+				Document.findOneAndUpdate({name: data.doc},{$push: {snapshots: snap}},function(err,doc){
+					if(!err){
+						data.username = session.uid;
+						data.publicurl = loc;
+						socket.emit('snapshot-created',data);
+					}
+				});
+			}
+			
 		});
 	});
 

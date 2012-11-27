@@ -29,7 +29,12 @@ html(lang='en')
 							block breadcrumbs
 
 						li.pull-right 
-							block username
+							a(href="/settings",style="margin-right: 5px")#settings
+								block username
+							a(href="/logout",style="margin-top: -7px").btn.btn-small
+								i.icon-remove
+							
+
 				
 		.container-fluid
 			block content

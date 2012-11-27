@@ -4,7 +4,7 @@ block titlepart
 	| Editor - #{name}
 
 block username
-	| Write a good one, #{username}
+	| #{username}
 
 block location
 	| #{name}
@@ -12,21 +12,22 @@ block location
 block breadcrumbs
 	span.divider
 		>
-	a(href="/groups/#{name}")
+	a(href="/groups/#{group}")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
 	span.divider
 		>
-	a(href="/editor/#{name}")
+	a(href="/editor/#{group}/#{name}")
 		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
 
 block page-scripts
 	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
 	script 
+		//move most of this to external script at some point
 		$(document).ready(function(){
 			var socket = io.connect('/');
 
 
-			var groupname = "#{name}";
+			var groupname = "#{group}";
 			var username= "#{username}";
 			window.docname = "#{name}"; // until a better solution is found for passing this info to the whiteboard
 
@@ -90,6 +91,17 @@ block page-scripts
 				} 
 			});
 
+			$('#snapshot-button').click(function(){
+				$(this).removeClass('btn-success');
+				$('#create-snapshot').modal();
+			});
+
+			$('#save').click(function(){
+				var canvas = document.getElementById("myCanvas");
+				var img    = canvas.toDataURL("image/png");
+				socket.emit('snapshot-create',{name: $('#snapshot-name').val(), notes: $('#notes').val(), img: img, doc: docname});
+				$('#create-snapshot').modal('hide');
+			});
 
 			$('#peak-mode .icon-eye-open').hide();
 			$('#peak-mode').click(function(){
@@ -118,12 +130,12 @@ block page-scripts
 		});
 
 block extra-info
-	a(href="/editor/#{name}/viewhistory").btn.view-link
+	a(href="/editor/#{group}/#{name}/viewhistory").btn.view-link
 		i.icon-time
 		|  View History
 	br
 	br
-	a(href="/editor/#{name}/viewsnapshots").btn.view-link
+	a(href="/editor/#{group}/#{name}/viewsnapshots").btn.view-link
 		i.icon-camera
 		|  View Snapshots
 	br
@@ -189,7 +201,7 @@ block canvas
 				i.icon-trash
 
 		.btn-group
-			a(href="").btn
+			a(href="").btn#snapshot-button
 				i.icon-camera
 			a(href="").btn
 				i.icon-print
@@ -213,3 +225,15 @@ block canvas
 	
 
 block content
+	div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true")#create-snapshot.modal.hide.fade
+		.modal-header
+			button(type="button",data-dismiss="modal",aria-hidden="true").close x
+			| Save Snapshot
+		.modal-body
+			| Snapshot name:
+			input(type="text")#snapshot-name
+			br
+			| Notes:
+			textarea(placeholder="Description of snapshot")#notes
+		.modal-footer
+			button(data-dismiss="modal",aria-hidden="true").btn#save Save!
