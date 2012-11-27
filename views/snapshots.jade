@@ -67,8 +67,8 @@ block content
 						each snapshot in snapshots
 							tr 
 								td
-									a(href="##{snapshot.name}",data-toggle="modal").snap-link #{snapshot.name}
-									div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true",id="snap-#{snapshot.name}").modal.hide.fade
+									a(href="##{snapshot.nospaces}",data-toggle="modal").snap-link #{snapshot.name}
+									div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true",id="snap-#{snapshot.nospaces}").modal.hide.fade
 										.modal-header
 											| #{snapshot.name}
 											button(type="button",data-dismiss="modal",aria-hidden="true").close x

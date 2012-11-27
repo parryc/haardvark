@@ -97,6 +97,7 @@ var Document = mongoose.model('Document',documentSchema);
 
 var snapshotSchema = new Schema({
 	name: String,
+	nospaces: String,
 	imageLocation: String,
 	note: String,
 	creator: String,
@@ -408,7 +409,9 @@ io.sockets.on( 'connection', function ( socket ) {
 		var loc = dir+timestamp+".png";
 		fs.writeFile("public/"+loc, dataBuffer, function(err) {
 			if(!err){
+				var nospaces = data.name.replace(" ","_");
 				var snap = new Snapshot({
+					nospaces: nospaces,
 					name: data.name,
 					imageLocation: loc,
 					creator: session.uid,
