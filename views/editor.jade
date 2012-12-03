@@ -24,70 +24,51 @@ block page-scripts
 	script 
 		//move most of this to external script at some point
 		$(document).ready(function(){
-			var socket = io.connect('/');
-
-
 			var groupname = "#{group}";
 			var username= "#{username}";
 			window.docname = "#{name}"; // until a better solution is found for passing this info to the whiteboard
-
+			window.erase = false;
+			
+			var socket = io.connect('/');
 			socket.emit('drawing-load',{doc: window.docname});
 
-			$('#myCanvas').hide();
-			$('#myCanvas-bar').hide();
-			$('#sidebar').css("left",$('#colab').position().left+$('#colab').width()+20);
-			$('#sidebar').css("top",$('#colab').position().top);
+			$('#myCanvas').css('margin-bottom',-1*$('#colab-container').height());
+			$('#myCanvas').css("z-index",-1);
+			$('#colab-container').css("opacity",.75);
+			$('#insert-text').addClass('btn-success');
 
-			window.erase = false;
+			//Tooltips
+			$('[rel\=tooltip]').tooltip({animation: false});
 
-			var peakon = false;
-			var peak_state = false;
-
-			$('.btn-group a').click(function(){
+			//Manage button clicking
+			$('.btn-group a').not('#peak-mode').click(function(){
 				window.erase = false;
 				$('.btn-group a').not('#peak-mode').removeClass('btn-success');
 				$(this).addClass('btn-success');
 				if($(this).attr("id") === "erase-button")
 					window.erase = true;
 			});
-			
-			$('.sidebar').click(function(){
-				var id = $(this).attr("id");
-				if(id === "edit-mode"){
-
-					//change buttons accordingly
-					$('#edit-mode').addClass("btn-success");
-					$('#draw-mode').removeClass("btn-success");
-					$('#myCanvas').hide();
-					$('#myCanvas-bar').hide();
-					$('#colab').show();
-					$('#colab-bar').show();
-
-					$('#colab-container').css('margin-top',0);
-					$('#colab-container').css('z-index',0);
-					if(peak_state)
-						$('#peak-mode').click();
 
 
-
-				} else if(id === "draw-mode") {
-					if(peakon){
-						$('#peak-mode').click();
-						peak_state = true;
-					}
-					//Change buttons accordingly
-					$('#draw-button').addClass("btn-success");
-					$('#draw-mode').addClass("btn-success");
-					$('#edit-mode').removeClass("btn-success");
-					$('#myCanvas').show();
-					$('#myCanvas-bar').show();
-					$('#colab-bar').hide();
-
-					$('#colab-container').css('margin-top',-1*$('#myCanvas').height()-6);
-					$('#myCanvas').css("opacity",.7);
+			//Alternate between drawing and writing mode
+			$('.drawing-mode, .writing-mode').click(function(){
+				$(this).addClass('btn-success');
+				if($(this).hasClass("writing-mode")){
+					$('#peak-mode').show();
+					$('#colab-container').css('z-index',1);
+					$('#myCanvas').css('margin-bottom',-1*$('#colab-container').height());
+					$('#myCanvas').css("z-index",-1);
+					if(peakon)
+						$('#colab-container').css("opacity",.75);
+					else
+						$('#myCanvas').css("opacity","");
+				} else  {
+					//$('#myCanvas').css('margin-bottom',-1*$('#colab-container').height());
+					$('#peak-mode').hide();
 					$('#myCanvas').css("z-index",1);
-					$('#colab-container').css('z-index',-1);
-
+					$('#myCanvas').css("opacity",.75);
+					$('#colab-container').css("z-index",-1);
+					$('#colab-container').css("opacity",1);
 				} 
 			});
 
@@ -97,6 +78,7 @@ block page-scripts
 			});
 
 
+			//Save history
 			var typingTimeout;
 			$('#colab').keyup(function(){
 				if(typingTimeout != undefined)
@@ -116,6 +98,7 @@ block page-scripts
 			});
 
 
+			//Save snapshot
 			$('#save').click(function(){
 				var canvas = document.getElementById("myCanvas");
 				var img    = canvas.toDataURL("image/png");
@@ -123,29 +106,25 @@ block page-scripts
 				$('#create-snapshot').modal('hide');
 			});
 
-			$('#peak-mode .icon-eye-open').hide();
+			//Init peak mode
+			var peakon = true;
+			$('#peak-mode .icon-eye-close').hide();
 			$('#peak-mode').click(function(){
-				if(!peakon){
-					$('#myCanvas').show();
-					$('#myCanvas').css('margin-bottom',-1*$('#colab-container').height());
-					$('#myCanvas').css("z-index",-1);
-					$('#peak-mode .icon-eye-open').show();
-					$('#peak-mode .icon-eye-close').hide();
-					$('#colab-container').css("opacity",.7);
-					peakon = true;
-					peak_state = true;
-				} else {
-					$('#myCanvas').hide();
-					$('#myCanvas').css('margin-bottom',0);
-					$('#myCanvas').css('z-index',1);
+				if(peakon){
 					$('#peak-mode .icon-eye-open').hide();
 					$('#peak-mode .icon-eye-close').show();
-					$('#peak-mode').removeClass('btn-success');
-					$('#colab-container').css("opacity",1);
+					$('#peak-mode').addClass('btn-success');
+					$('#peak-mode').addClass('btn-success');
+					$('#colab-container').css("opacity",1);	
+					$('#myCanvas').css("opacity","");
 					peakon = false;
-					peak_state = false;
+				} else {
+					$('#peak-mode .icon-eye-open').show();
+					$('#peak-mode .icon-eye-close').hide();
+					$('#peak-mode').removeClass('btn-success');
+					$('#colab-container').css("opacity",.75);
+					peakon = true;
 				}	
-
 			});
 		});
 
@@ -181,55 +160,51 @@ block canvas
 	span#lastEditedBy #{lastEditedBy}
 	|  at 
 	span#lastEdit #{lastEdit}
-
-	.btn-toolbar#colab-bar
+	br
+	br
+	.btn-toolbar
 		.btn-group
-			a(href="").btn
+			a(href="",rel="tooltip",title="Insert Text").btn.writing-mode#insert-text
+				img(src="/images/textinput.png",style="width:16px").menu-button
+			a(href="",rel="tooltip",title="Bold").btn.writing-mode
 				i.icon-bold
-			a(href="").btn
+			a(href="",rel="tooltip",title="Italic").btn.writing-mode
 				i.icon-italic
-			a(href="").btn
+			a(href="",rel="tooltip",title="List").btn.writing-mode
 				i.icon-list
-
 		.btn-group
-			a(href="").btn
+			a(href="",rel="tooltip",title="Align Left").btn.writing-mode
 				i.icon-align-left
-			a(href="").btn
+			a(href="",rel="tooltip",title="Align Center").btn.writing-mode
 				i.icon-align-center
-			a(href="").btn
+			a(href="",rel="tooltip",title="Align Right").btn.writing-mode
 				i.icon-align-right
-			a(href="").btn
+			a(href="",rel="tooltip",title="Justify").btn.writing-mode
 				i.icon-align-justify
 		.btn-group
-			a(href="").btn
+			a(href="",rel="tooltip",title="Undo").btn.writing-mode
+				img(src="/images/undo.png").menu-button
+			a(href="",rel="tooltip",title="Redo").btn.writing-mode
+				img(src="/images/redo.png").menu-button
+			a(href="",rel="tooltip",title="Print").btn.writing-mode
 				i.icon-print
-			a(href="").btn
+			a(href="",rel="tooltip",title="Save to computer").btn.writing-mode
 				i.icon-download-alt
-			a(href="").btn
-				i.icon-repeat
+		br
+		br
 		.btn-group
-			a(href="").btn.sidebar#peak-mode
+			a(href="",rel="tooltip",title="Draw").btn.drawing-mode#draw-button
+				img(src="/images/draw-mode.png").menu-button
+			a(href="",rel="tooltip",title="Erase").btn.drawing-mode#erase-button
+				img(src="/images/eraser.png").menu-button
+			a(href="",rel="tooltip",title="Delete All").btn.drawing-mode
+				i.icon-trash
+			a(href="",rel="tooltip",title="Save snapshot").btn.drawing-mode#snapshot-button
+				i.icon-camera
+		.btn-group
+			a(href="",rel="tooltip",title="Toggle Whiteboard").btn.writing-mode#peak-mode
 				i.icon-eye-close
 				i.icon-eye-open
-
-	.btn-toolbar#myCanvas-bar
-		.btn-group
-			a(href="").btn#draw-button
-				img(src="/images/draw-mode.png").menu-button
-			a(href="").btn
-				i.icon-font
-			a(href="").btn#erase-button
-				img(src="/images/eraser.png").menu-button
-			a(href="").btn
-				i.icon-trash
-
-		.btn-group
-			a(href="").btn#snapshot-button
-				i.icon-camera
-			a(href="").btn
-				i.icon-print
-			a(href="").btn
-				i.icon-repeat
 
 	.canvas
 		canvas(height="600px",width="500px")#myCanvas.canvas
@@ -237,15 +212,8 @@ block canvas
 			textarea(rows="30",style="width: 500px")#colab
 		script
 			mobwrite.share("colab");
-	div(style="position: fixed;")#sidebar
-		a(href="").btn.sidebar.btn-success#edit-mode
-			img(src="/images/edit-mode.png")
-		br
-		br
-		a(href="").btn.sidebar#draw-mode
-			img(src="/images/draw-mode.png")
-		
-	
+
+			
 
 block content
 	div(tabindex="-1",role="dialog",aria-labelledby="addLabel",aria-hidden="true")#create-snapshot.modal.hide.fade
