@@ -185,7 +185,6 @@ app.get('/groups/:name', express.bodyParser(), function(req, res){
 	req.session.groupname = req.params.name;
 	var chatlog = {msgs : []};
 	Group.findOne({name: req.params.name}).populate('members').populate('documents').populate('chatlog').exec(function(err,group){
-
 		var len = group.chatlog.length;
 		var i = 0;
 		while(i < len){
@@ -193,14 +192,14 @@ app.get('/groups/:name', express.bodyParser(), function(req, res){
 			var message = group.chatlog[i].message;
 			var user = group.members.filter(function (user) { return user.username === msgUser; });
 			var color = user[0].color;
-			console.log(msgUser+" "+color+" "+message);
+			//console.log(msgUser+" "+color+" "+message);
 			i++;
-			console.log(i+len);
+			//console.log(i+len);
 			if(msgUser === req.session.uid)
 				chatlog.msgs.push({"float": false, "color": color, "message": message });
 			else
 				chatlog.msgs.push({"float": true, "color": color, "message": message });
-			console.log(chatlog);
+			//console.log(chatlog);
 		
 		}
 		res.render('doc.jade', {
@@ -296,6 +295,7 @@ io.configure(function (){
 		sessionStore.get(handshakeData.cookies['sid'], function(err, session) {
 			if (err || !session)
 				return callback('No session found', false);
+
 			handshakeData.session = session;
 			//session start!
 			//console.log(handshakeData);
@@ -320,54 +320,42 @@ io.sockets.on( 'connection', function ( socket ) {
 			name: data.name
 		});
 
-		//Waterfaaaaalllll
-		User.findOne({username:"Peter"},function(err,user){
-			group.members.push(user);
-			User.findOne({username:"Paul"},function(err,user){
+		User.findOne({username:session.uid},function(err,user){
+			if(user){
 				group.members.push(user);
-				User.findOne({username:"Mary"},function(err,user){
-					group.members.push(user);
-					//Then add the actual group member
-					//For non-testing code, this would be the only lookup
-					User.findOne({username:session.uid},function(err,user){
-						if(user){
-							group.members.push(user);
-						} else {
-							//For testing, make a dummy user for the rest of the tests
-							var r = Math.floor((Math.random()*255)+1);
-							var g = Math.floor((Math.random()*255)+1);
-							var b = Math.floor((Math.random()*255)+1);
-							var color = "rgb("+r+","+g+","+b+")";
+			} else {
+				//For testing, make a dummy user for the rest of the tests
+				var r = Math.floor((Math.random()*255)+1);
+				var g = Math.floor((Math.random()*255)+1);
+				var b = Math.floor((Math.random()*255)+1);
+				var color = "rgb("+r+","+g+","+b+")";
 
-							var curruser = new User({
-								username: session.uid,
-								password: "dummy",
-								email: "dummy",
-								color: color
-							});
-							curruser.save();
-							group.members.push(curruser);
-						}
-
-						console.log("new group: " + group);
-						group.save(function(err){
-							if(err)
-								console.log(err);
-						});
-
-						data.lastedit = "No Documents yet!";
-						data.upcoming = "No Documents yet!";
-
-						//TODO: Code to decide if it should be all names or "Name, Name, ...";
-						//Probably, if total length < some threshhold
-						//data.memberNames = "Peter, Paul, Mary, "+session.uid;
-						data.memberNames = session.uid;
-						socket.emit('group-created',data);
-
-						});
+				var curruser = new User({
+					username: session.uid,
+					password: "dummy",
+					email: "dummy",
+					color: color
 				});
+				curruser.save();
+				group.members.push(curruser);
+			}
+
+			console.log("new group: " + group);
+			group.save(function(err){
+				if(err)
+					console.log(err);
 			});
-		});
+
+			data.lastedit = "No Documents yet!";
+			data.upcoming = "No Documents yet!";
+
+			//TODO: Code to decide if it should be all names or "Name, Name, ...";
+			//Probably, if total length < some threshhold
+			//data.memberNames = "Peter, Paul, Mary, "+session.uid;
+			data.memberNames = session.uid;
+			socket.emit('group-created',data);
+
+			});
 	});
 
 
@@ -463,13 +451,15 @@ io.sockets.on( 'connection', function ( socket ) {
 	************/
 	socket.on('chat-join',function(data){
 		User.findOne({username: data.username},function(err,user){
-			data.color = user.color;
-			var check = connections.chatusers.filter(function (user) { return user.username === data.username; });
-			if(check.length === 0){
-				connections.chatusers.push(data);
-				console.log(connections);
+			if(!err){
+				data.color = user.color;
+				var check = connections.chatusers.filter(function (user) { return user.username === data.username; });
+				if(check.length === 0){
+					connections.chatusers.push(data);
+					console.log(connections);
+				}
+				io.sockets.emit('chat-joined',connections);
 			}
-			io.sockets.emit('chat-joined',connections);
 		});
 	});
 	socket.on('sendchat', function(data) {

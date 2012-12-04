@@ -29,6 +29,10 @@ block page-scripts
 			window.docname = "#{name}"; // until a better solution is found for passing this info to the whiteboard
 			window.erase = false;
 			
+			//TODO: implement chat here
+			$('#chatbox').css("bottom","-13.6em");
+			$('#currently-on').html("See doc page for chat");
+
 			var socket = io.connect('/');
 			socket.emit('drawing-load',{doc: window.docname});
 

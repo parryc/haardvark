@@ -14,6 +14,10 @@ block page-scripts
 		$(document).ready(function(){
 			var groupname = "#{name}";
 			var username= "#{username}";
+			//because i'm too lazy to do real auth and this keeps the chat client from breaking if the server is reset
+			if(username === "")
+				username = "Peter";
+
 			$('#create-document-link').click(function(){$('#create-document').modal()});
 			//$('#chatlog').html("#{chatlog}");
 
