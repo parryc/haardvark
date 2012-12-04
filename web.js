@@ -14,6 +14,8 @@ var app = express(),
 	mongoose = require('mongoose');
 //	db = mongoose.createConnection('mongodb://localhost/haardvark');
 
+//Reduce logging
+io.set('log level',1);
 
 var mob = mobwrite({
   // Show debug logs in the browser, and use an uncompressed copy of Javascript.
