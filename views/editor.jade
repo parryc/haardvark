@@ -12,11 +12,11 @@ block location
 block breadcrumbs
 	span.divider
 		>
-	a(href="/groups/#{group}")
+	a(href="/groups/#{group}",rel="tooltip",title="#{group} documents")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
 	span.divider
 		>
-	a(href="/editor/#{group}/#{name}")
+	a(href="/editor/#{group}/#{name}",rel="tooltip",title="#{name} editor")
 		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
 
 block page-scripts
@@ -140,20 +140,6 @@ block extra-info
 	br
 	br
 
-block members
-	div
-		.column-menu.no-select#members Members
-			span.chevron
-				i.icon-chevron-up
-				i.icon-chevron-down
-		a(href="#add-member",style="margin-top: -22px").btn.btn-small.pull-right#add-member-link
-			i.icon-plus
-			
-		.column-content
-			each member in members
-				div(style="background: #{member.color}").color-div
-				| #{member.username}
-				br
 
 block canvas
 	| Last edited by 

@@ -1,6 +1,11 @@
 /*
 General css
 */
+.logo {
+  width: 45px;
+  margin-top: 10px;
+  float: left;
+}
 .rounded {
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
@@ -8,7 +13,16 @@ General css
 }
 .breadcrumbicon {
   width: 35px;
+  height: 35px;
   margin-top: -12px;
+  border: 2px dashed #ccc;
+  padding: 3px;
+  border-radius: 4px;
+  moz-border-radius: 4px;
+  webkit-border-radius: 4px;
+}
+.breadcrumbicon:hover {
+  border: 2px dashed #000;
 }
 .center-form {
   padding-top: 15px;

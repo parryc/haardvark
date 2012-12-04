@@ -20,19 +20,21 @@ html(lang='en')
 		block header
 			.navbar
 				.navbar-inner
+					img(src="/images/logo.png").logo
 					.pull-left.brand.handwriting
 						h1 Haardvark
 					ul(style="font-size: 2em;").breadcrumb
 						li
-							a(href="/groups")
+							a(href="/groups",rel="tooltip",title="Groups",data-placement="bottom")
 								img(src="/images/breadcrumbs/home.png").breadcrumbicon
 							block breadcrumbs
 
 						li.pull-right 
-							a(href="/settings",style="margin-right: 5px")#settings
-								block username
-							a(href="/logout",style="margin-top: -7px").btn.btn-small
-								i.icon-remove
+							block username
+							a(href="/settings",rel="tooltip",data-placement="bottom",title="Settings",style="margin-left: 10px")
+								img(src="/images/wrench.png",style="width: 20px;")
+							a(href="/logout",rel="tooltip",data-placement="bottom",title="Logout",style=" margin-left: 10px")
+								img(src="/images/circle-x.png",style="width: 20px;")
 							
 
 				

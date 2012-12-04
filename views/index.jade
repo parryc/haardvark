@@ -3,7 +3,13 @@ extend minimal-layout
 block page-scripts
 	script
 		$(document).ready(function(){
-			$('#register-link').click(function(){$('#register').modal()});
+			$('#register-link').click(function(){
+				$('#register-message').html("");
+				$('#send-registration').show();
+				$('#register-body').show();
+				$('#register-body input').val("");
+				$('#register').modal();
+			});
 			$('#forgetful-link').click(function(){$('#forgetful').modal()});
 			var socket = io.connect('/');
 			$('#send-registration').click(function(e){
@@ -13,17 +19,20 @@ block page-scripts
 					"password":$('#new-password').val(),
 					"email":$('#new-email').val()
 					});
-
-				$('#register-body').html("Sending registration...");
+				$('#register-body').hide();
+				$('#register-message').html("Sending registration...");
 			});
 			socket.on('register-success',function(data){
 				console.log(data);
-				$('#register-body').html(
+				$('#send-registration').hide();
+				$('#register-body').hide();
+				$('#register-message').html(
 					"Go ahead and sign in, " + data.username + "!"
 					);
 				});
 			socket.on('register-error',function(data){
-				$('#register-body').html(
+				$('#register-body').hide();
+				$('#register-message').html(
 					"Error, Will Robinson, Error!: " + data.error);
 				});
 		});
@@ -63,6 +72,7 @@ block form
 			br
 			| Re-enter Password:
 			input(type="password")#reenter-password
+		.modal-body#register-message
 		.modal-footer
 			button.btn.btn-primary#send-registration Register
 			button(data-dismiss="modal",aria-hidden="true").btn Close
@@ -75,5 +85,5 @@ block form
 			| Enter your email below to have a new password sent to your inbox
 			input(type="text",placeholde="Enter email")#email
 		.modal-footer
-			button(data-dismiss="modal",aria-hidden="true").btn Send!
+			button(data-dismiss="modal",aria-hidden="true").btn.btn-primary Send!
 

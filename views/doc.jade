@@ -53,28 +53,14 @@ block page-scripts
 block breadcrumbs
 	span.divider
 		>
-	a(href="/groups/#{name}")
+	a(href="/groups/#{name}",rel="tooltip",title="#{name} documents")
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
 block duedates
-block members
-	div
-		.column-menu.no-select#members Members
-			span.chevron
-				i.icon-chevron-up
-				i.icon-chevron-down
-		a(href="#add-member",style="margin-top: -22px").btn.btn-small.pull-right#add-member-link
-			i.icon-plus
-			
-		.column-content
-			each member in members
-				div(style="background: #{member.color}").color-div
-				| #{member.username}
-				br
-
 
 block content
 	h1.no-select#document-title Documents
 		a(href="#create-document",style="margin-left: 10px").btn.btn-small#create-document-link
+			| add 
 			i.icon-plus
 	.container-fluid
 		.row-fluid

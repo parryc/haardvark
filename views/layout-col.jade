@@ -13,20 +13,20 @@ html(lang='en')
 			script(src="/javascripts/paper.js")
 			script
 				$(document).ready(function(){
-
-					$('.column-content').hide();
-					$('.icon-chevron-down').hide();
+					$('[rel\=tooltip]').tooltip({animation:false,placement: "bottom"});
+					//$('.column-content').hide();
+					$('.icon-chevron-up').hide();
 					$('#minimize-chat').show();
 					$('.column-menu').click(function(){
 						toggleHeader(this);
-						});
+					});
 					$('.btn').not('.view-link').click(function(e){
 						e.preventDefault();
 					});
 
 					function toggleHeader(el){
 						var id = el.id;
-						$('#'+id).next().next().toggle();
+						$('#'+id).next().toggle();
 						$('#'+id+ " .chevron .icon-chevron-down").toggle();
 						$('#'+id+ " .chevron .icon-chevron-up").toggle();
 					}
@@ -58,18 +58,20 @@ html(lang='en')
 		block header
 			.navbar
 				.navbar-inner
+					img(src="/images/logo.png").logo
 					.pull-left.brand.handwriting
 						h1 
 							block location
 					ul(style="font-size: 2em;").breadcrumb
-						a(href="/groups")#bread1
+						a(href="/groups",rel="tooltip",title="Groups")
 							img(src="/images/breadcrumbs/home.png").breadcrumbicon
 						block breadcrumbs
-						li.pull-right 
-							a(href="/settings",style="margin-right: 5px")#settings
-								block username
-							a(href="/logout",style="margin-top: -7px").btn.btn-small
-								i.icon-remove
+						li.pull-right
+							block username
+							a(href="/settings",rel="tooltip",title="Settings",style="margin-left: 10px")
+								img(src="/images/wrench.png",style="width: 20px;")
+							a(href="/logout",rel="tooltip",title="Logout",style=" margin-left: 10px")
+								img(src="/images/circle-x.png",style="width: 20px;")
 				
 		.container-fluid
 			.row-fluid
@@ -78,6 +80,21 @@ html(lang='en')
 						div
 							block extra-info
 							block members
+								div
+									.column-menu.no-select#members Members
+										span.chevron
+											i.icon-chevron-up
+											i.icon-chevron-down
+
+									.column-content
+										each member in members
+											div(style="background: #{member.color}").color-div
+											| #{member.username}
+											br
+										br
+										a(href="#add-member",style="font-size: .8em").btn.btn-small#add-member-link
+											| Add member 
+											i.icon-plus 
 							hr
 							block duedates
 								div 
@@ -85,8 +102,6 @@ html(lang='en')
 										span.chevron
 											i.icon-chevron-up
 											i.icon-chevron-down
-									a(href="#",style="margin-top: -22px").btn.btn-small.pull-right
-										i.icon-plus
 									
 									.column-content
 										| THIS IS THE CONTENT OF THE DUE DATES!
