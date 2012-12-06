@@ -11,8 +11,10 @@ html(lang='en')
 			script(src="/javascripts/bootstrap.js")
 			script(src="/mobwrite/mobwrite-client.js")
 			script(src="/javascripts/paper.js")
+			script(src="/javascripts/jquery.tablesorter.min.js")
 			script
 				$(document).ready(function(){
+					$('.table').not('#chatlog').tablesorter()
 					$('[rel\=tooltip]').tooltip({animation:false,placement: "bottom"});
 					//$('.column-content').hide();
 					$('.icon-chevron-up').hide();
@@ -51,6 +53,7 @@ html(lang='en')
 				});
 		block page-scripts
 		block stylesheets
+			link(rel='stylesheet', href='/stylesheets/theme.default.css')
 			link(rel='stylesheet', href='/stylesheets/style.css')
 			link(rel='stylesheet', href='/stylesheets/fonts.css')
 			link(rel='stylesheet', href='/stylesheets/bootstrap.css')

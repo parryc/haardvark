@@ -10,6 +10,7 @@ block page-scripts
 	script 
 		$(document).ready(function(){
 			$('[rel\=tooltip]').tooltip({animation:false});
+			$('.table').tablesorter();
 			$('#create-group-link').click(function(){$('#create-group').modal()});
 			var socket = io.connect('/');
 			$('#create').click(function(e){
@@ -35,7 +36,7 @@ block content
 		a(href="#create-group",style="margin-left: 10px").btn.btn-small#create-group-link
 			| add 
 			i.icon-plus
-	table.table
+	table.table.tablesorter
 		thead
 			th Name
 			th Last Edit
