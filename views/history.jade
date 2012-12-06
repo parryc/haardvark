@@ -21,9 +21,9 @@ block page-scripts
 
 			$( "#slider" ).change(function(){
 				var pos = $('#slider').val();//logslider($('#slider').val());
-				pos = maxPos-pos-1;
-				if(pos < 0)
-					pos = 0;
+				//pos = maxPos-pos-1;
+				if(pos > maxPos-1)
+					pos = maxPos-1;
 				socket.emit('history-lookup',{pos: pos, doc: window.docname});
 			});	
 
