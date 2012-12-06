@@ -16,8 +16,8 @@ block breadcrumbs
 		img(src="/images/breadcrumbs/groups.png").breadcrumbicon
 	span.divider
 		>
-	a(href="/editor/#{group}/#{name}",rel="tooltip",title="#{name} editor")
-		img(src="/images/breadcrumbs/doc.png").breadcrumbicon
+	span(rel="tooltip",title="#{name} editor")
+		img(src="/images/breadcrumbs/doc.png").breadcrumbicon-current
 
 block page-scripts
 	script(src="/javascripts/whiteboard.js",type="text/paperscript",canvas="myCanvas")
