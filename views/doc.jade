@@ -111,15 +111,7 @@ block chatlog
 	table.table
 		each m in chatlog.msgs
 			tr
-			if m.is_user
-				td
 				td
 					span(style="color: #{m.color}") #{m.message}
 					br
 					span.chat-timestamp #{m.timestamp}
-			else
-				td
-					span(style="color: #{m.color}") #{m.message}
-					br
-					span.chat-timestamp #{m.timestamp}
-				td

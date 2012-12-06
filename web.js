@@ -493,10 +493,7 @@ io.sockets.on( 'connection', function ( socket ) {
 				data.timestamp = msg.timestamp;
 				data.color = user.color;
 				console.log(data);
-				//There has to be a better way of doing this...
-				data.broadcast = true;
 				socket.broadcast.emit('updatechat',data);
-				data.broadcast = false;
 				socket.emit('updatechat', data);
 			});
 			//update at the end of saving everything

@@ -38,10 +38,7 @@ html(lang='en')
 
 					socket.on('updatechat', function(data){
 						var d = new Date(data.timestamp);
-						if(data.broadcast)
-							$('#chatlog table').append("<tr><td></td><td><span style=\"color: "+data.color+"\">"+data.message+"</span><br/><span class=\"chat-timestamp\">"+d+"</td></tr>");
-						else
-							$('#chatlog table').append("<tr><td><span style=\"color: "+data.color+"\">"+data.message+"</span><br/><span class=\"chat-timestamp\">"+d+"</td><td></td></tr>");
+						$('#chatlog table').append("<tr><td><span style=\"color: "+data.color+"\">"+data.message+"</span><br/><span class=\"chat-timestamp\">"+d+"</span></td></tr>");
 						$('#chatlog').scrollTop($('#chatlog').prop("scrollHeight"));
 						console.log(data.message);
 					});
@@ -75,7 +72,7 @@ html(lang='en')
 							a(href="/settings",rel="tooltip",title="Settings",style="margin-left: 10px")
 								img(src="/images/wrench.png",style="width: 20px;")
 							a(href="/logout",rel="tooltip",title="Logout",style=" margin-left: 10px")
-								img(src="/images/circle-x.png",style="width: 20px;")
+								img(src="/images/logout.png",style="width: 20px;")
 				
 		.container-fluid
 			.row-fluid

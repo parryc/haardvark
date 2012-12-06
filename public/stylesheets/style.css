@@ -105,9 +105,9 @@ Chat client
   padding: 15px;
 }
 #chatlog tr {
-  font-size: 0.7em;
+  font-size: 1em;
 }
 .chat-timestamp {
   color: #999;
-  font-size: 0.1em;
+  font-size: 0.8em;
 }
