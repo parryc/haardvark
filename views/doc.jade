@@ -34,6 +34,7 @@ block page-scripts
 					var out = "<span style=\"color: "+e.color+"\">"+e.username+"</span> ";
 					$('#on-list').append(out);
 				});
+				$('#chatlog').scrollTop($('#chatlog').prop("scrollHeight"));
 			});
 			
 			/// Create document \\\
@@ -49,8 +50,9 @@ block page-scripts
 			});
 			socket.on('document-created',function(data){
 				//new group!
-				var row = "<tr><td><a href='/editor/'"+data.name+">"+data.name+"</a></td><td>"+data.lastedit+"</td><td>"+data.upcoming+"</td><td><a href=\"\" class=\"btn rounded\"><i class=\"icon-remove\"></i></a></td></tr>";
-				$('#document-data').append(row);
+				window.location.reload(true);
+				//var row = "<tr><td><a href='/editor/'"+data.name+">"+data.name+"</a></td><td>"+data.lastedit+"</td><td>"+data.upcoming+"</td><td><a href=\"\" class=\"btn rounded\"><i class=\"icon-remove\"></i></a></td></tr>";
+				//$('#document-data').append(row);
 			});
 		});
 
@@ -106,10 +108,18 @@ block content
 			button(data-dismiss="modal",aria-hidden="true").btn#create Create!
 
 block chatlog
-	each m in chatlog.msgs
-		if m.float
-			span(style="color: #{m.color}").msg-right #{m.message}
-			br
-		else
-			span(style="color: #{m.color}") #{m.message}
-			br
+	table.table
+		each m in chatlog.msgs
+			tr
+			if m.is_user
+				td
+				td
+					span(style="color: #{m.color}") #{m.message}
+					br
+					span.chat-timestamp #{m.timestamp}
+			else
+				td
+					span(style="color: #{m.color}") #{m.message}
+					br
+					span.chat-timestamp #{m.timestamp}
+				td

@@ -96,7 +96,18 @@ Editor
 /*
 Chat client
 */
-.msg-right {
-  float: right;
-  width: 120px;
+#chatlog {
+  font-size: 0.9em;
+  margin-top: 0em;
+  height: 10em;
+  overflow-y: scroll;
+  width: 250px;
+  padding: 15px;
+}
+#chatlog tr {
+  font-size: 0.7em;
+}
+.chat-timestamp {
+  color: #999;
+  font-size: 0.1em;
 }

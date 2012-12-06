@@ -23,8 +23,9 @@ block page-scripts
 			});
 			socket.on('group-created',function(data){
 				//new group!
-				var row = "<tr><td><a href='/groups/'"+data.name+">"+data.name+"</a><br/><span class='member-list'>"+data.memberNames+"</span></td><td>"+data.lastedit+"</td><td>"+data.upcoming+"</td><td><a href=\"\" class=\"btn rounded\"><i class=\"icon-remove\"></i></a></td></tr>";
-				$('#group-data').append(row);
+				window.location.reload(true);
+				//var row = "<tr><td><a href='/groups/'"+data.name+">"+data.name+"</a><br/><span class='member-list'>"+data.memberNames+"</span></td><td>"+data.lastedit+"</td><td>"+data.upcoming+"</td><td><a href=\"\" class=\"btn rounded\"><i class=\"icon-remove\"></i></a></td></tr>";
+				//$('#group-data').append(row);
 			});
 		});
 

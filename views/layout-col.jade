@@ -37,7 +37,11 @@ html(lang='en')
 					var socket = io.connect('/')
 
 					socket.on('updatechat', function(data){
-						$('#chatlog').append(data.message);
+						var d = new Date(data.timestamp);
+						if(data.broadcast)
+							$('#chatlog table').append("<tr><td></td><td><span style=\"color: "+data.color+"\">"+data.message+"</span><br/><span class=\"chat-timestamp\">"+d+"</td></tr>");
+						else
+							$('#chatlog table').append("<tr><td><span style=\"color: "+data.color+"\">"+data.message+"</span><br/><span class=\"chat-timestamp\">"+d+"</td><td></td></tr>");
 						$('#chatlog').scrollTop($('#chatlog').prop("scrollHeight"));
 						console.log(data.message);
 					});
@@ -94,7 +98,10 @@ html(lang='en')
 										br
 										a(href="#add-member",style="font-size: .8em").btn.btn-small#add-member-link
 											| Add member 
-											i.icon-plus 
+											i.icon-plus
+										br
+										br
+										.alert(style="font-size: .8em") Cannot currently add members
 							hr
 							block duedates
 								div 
@@ -116,7 +123,7 @@ html(lang='en')
 					span.pull-right
 						#close
 							i.icon-remove
-				#chatlog(style="margin-top: 0em; height: 10em; overflow-y: scroll; width: 250px; padding: 15px; font-size: .8em")
+				#chatlog
 					block chatlog
 				input(type="text",placeholder="Start chatting!",style="margin-left: 10px; width: 250px")#msg
 		block footer

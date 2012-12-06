@@ -190,15 +190,18 @@ app.get('/groups/:name', express.bodyParser(), function(req, res){
 		while(i < len){
 			var msgUser = group.chatlog[i].username;
 			var message = group.chatlog[i].message;
+			var timestamp = group.chatlog[i].timestamp;
 			var user = group.members.filter(function (user) { return user.username === msgUser; });
 			var color = user[0].color;
 			//console.log(msgUser+" "+color+" "+message);
 			i++;
 			//console.log(i+len);
+			var msg = {"color": color, "message": message, "timestamp": timestamp};
 			if(msgUser === req.session.uid)
-				chatlog.msgs.push({"float": false, "color": color, "message": message });
+				msg.is_user = false;
 			else
-				chatlog.msgs.push({"float": true, "color": color, "message": message });
+				msg.is_user = true;
+			chatlog.msgs.push(msg);
 			//console.log(chatlog);
 		
 		}
@@ -472,11 +475,11 @@ io.sockets.on( 'connection', function ( socket ) {
 		//Broadcast right aligned
 		//Emit left aligned
 		var message = data.message;
-		var rightalign = "<span class='msg-right'>"+message+"</span><br/>";
+		/*var rightalign = "<span class='msg-right'>"+message+"</span><br/>";
 		data.message = rightalign;
 		socket.broadcast.emit('updatechat',data);
 		var leftalign = "<span>"+message+"</span><br/>";
-		data.message = leftalign;
+		data.message = leftalign;*/
 	
 		//Save chat msg to database!
 		var msg = new Msg({
@@ -484,11 +487,21 @@ io.sockets.on( 'connection', function ( socket ) {
 				message:message
 			});
 		msg.save();
-
+		console.log(msg);
 		Group.findOneAndUpdate({name:session.groupname},{$push : { chatlog : msg}},function(err,group){
-			console.log(data);
+			User.findOne({username: session.uid},function(err,user){
+				data.timestamp = msg.timestamp;
+				data.color = user.color;
+				console.log(data);
+				//There has to be a better way of doing this...
+				data.broadcast = true;
+				socket.broadcast.emit('updatechat',data);
+				data.broadcast = false;
+				socket.emit('updatechat', data);
+			});
 			//update at the end of saving everything
-			socket.emit('updatechat', data);
+			//socket.broadcast.emit('updatechat',data);
+
 		});
 
 	});
